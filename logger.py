@@ -1,4 +1,5 @@
 from tkinter import *
+import tkinter.filedialog as fd
 import csv
 from datetime import datetime
 
@@ -127,29 +128,29 @@ class Window(Frame):
         #log File Name
         logNameTxt = Label(self, text="Log Filename")
         logNameTxt.grid(row=7,column=0)
-        self.logNameEnt = Entry(self,width=10)
-        self.logNameEnt.grid(row=7,column=1)
+        self.logNameEnt = Entry(self,width=35)
+        self.logNameEnt.grid(row=7,column=1,columnspan=4)
         #SOTA CSV File name
         sotaNameTxt = Label(self, text="SOTA Filename")
-        sotaNameTxt.grid(row=7,column=2)
+        sotaNameTxt.grid(row=8,column=2)
         self.sotaNameEnt = Entry(self,width=10)
-        self.sotaNameEnt.grid(row=7,column=3)
+        self.sotaNameEnt.grid(row=8,column=3)
         #ADIF Filename
         adifNameTxt = Label(self, text="ADIF Filename")
-        adifNameTxt.grid(row=7,column=4)
+        adifNameTxt.grid(row=8,column=4)
         self.adifNameEnt = Entry(self,width=10)
-        self.adifNameEnt.grid(row=7,column=5)
+        self.adifNameEnt.grid(row=8,column=5)
 
         #QSO List
         self.qsoListTxt = Label(self, bg="white",text="test")
-        self.qsoListTxt.grid(row=8,column=0,columnspan=8,rowspan=3)
+        self.qsoListTxt.grid(row=10,column=0,columnspan=8,rowspan=3)
 
         #Log Button
         logBtn = Button(self, text="Log QSO", command=self.logQsoBtn)
-        logBtn.grid(row=6,column=5) #place(x=300,y=200)
+        logBtn.grid(row=7,column=5) #place(x=300,y=200)
         #Exit Button
         exitBtn = Button(self, text="Exit", command=self.clickExitBtn)
-        exitBtn.grid(row=6,column=7)
+        exitBtn.grid(row=7,column=7)
 
     def clickExitBtn(self):
         exit()
@@ -262,8 +263,13 @@ class Window(Frame):
         print("Exported VHF Contest Log")
 
     def openLog(self):
-        self.logFile = open('.log','a+')
-        print("Opened new Log")
+        #File open Dialog
+        filetypes = (('Log Files','*.log'),('All Files','*.*'))
+        self.logFile = fd.askopenfilename(initialdir='./',\
+            filetypes=filetypes,title='Select Log File')
+        #Set edit in gui
+        self.logNameEnt.insert(0,self.logFile)
+        print("Opened new Log "+self.logFile)
 
     def newLog(self):
         print("Created new Log")

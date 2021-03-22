@@ -28,6 +28,7 @@ There are some less important things to take care of too:
 > Visual improvements to gui
 > Ask for export file name in prompt
 > Any other export settings in a prompt
+> Change default log location in settings
 > Export cabrillo for other contests
 
 And some things that would be nice to have, but I may never implement, since 
