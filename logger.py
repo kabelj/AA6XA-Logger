@@ -1,9 +1,3 @@
-#TO DO
-#-Settings
-#--defaults to settings window, then read
-#-list last few qsos
-#-export Cabrillo
-#
 from tkinter import *
 import csv
 from datetime import datetime
