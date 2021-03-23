@@ -2,6 +2,7 @@ from tkinter import *
 import tkinter.filedialog as fd
 import tkinter.messagebox as md
 import csv
+import configparser
 from datetime import datetime
 
 class Window(Frame):
@@ -10,8 +11,11 @@ class Window(Frame):
         self.master=master
         self.pack(fill=BOTH, expand=1)
 
-        #Defaults, for now
-        self.callsign = 'AA6XA'
+        #Read and set defaults
+        config = configparser.ConfigParser()
+        config.read('loggersettings')
+        self.callsign = config['STATION']['callsign']
+        print(self.callsign)
 
         #Add Menus
         menu = Menu(self.master)
@@ -134,14 +138,18 @@ class Window(Frame):
         exitBtn = Button(self, text="Exit", command=self.clickExitBtn)
         exitBtn.grid(row=7,column=7)
 
+        #Ask for log file
+        filetypes = (('Log Files','*.log'),('All Files','*.*'))
+        self.logFile = fd.askopenfilename(initialdir='./',\
+            filetypes=filetypes,title='Select Log File')
+        #Set edit in gui
+        self.logNameEnt.insert(0,self.logFile)
+
     def clickExitBtn(self):
         exit()
 
     def logQsoBtn(self):
-        #make sure we have a valid log name to save to
-        #if self.logFile==''
-        #    self.logFile=self.logNameEnt.get()
-
+        #open log file
         self.logFile = open(self.logNameEnt.get(),'a+')
 
         #get data from text fields
@@ -160,17 +168,21 @@ class Window(Frame):
         sota = self.sotaEnt.get()
         s2s = self.s2sEnt.get()
         wwff = self.wwffEnt.get()
+
         #write into a big string
         qso = date+','+time+','+call+','+freq+','+rstS+','+rstR+','+\
             name+','+qth+','+state+','+grid+','+power+','+mode+','+\
             sota+','+s2s+','+wwff+'\n'
+
         #write to the log
         self.logFile.write(qso)
+
         #update list on screen
         qsoList = ['']*5
         for i in range(0,4):
             qsoList[i] = self.logFile.readline()
         self.qsoListTxt.configure(text=qso)
+
         #clear fields
         self.timeEnt.delete(0,'end')
         self.callEnt.delete(0,'end')
@@ -306,7 +318,7 @@ class Window(Frame):
         return band
 
     def vhfTest(self):
-        print("Exported VHF Contest Log")
+        print("VHF Contest Log not exported ..... yet")
 
     def openLog(self):
         #File open Dialog
