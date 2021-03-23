@@ -1,5 +1,6 @@
 from tkinter import *
 import tkinter.filedialog as fd
+import tkinter.messagebox as md
 import csv
 from datetime import datetime
 
@@ -235,21 +236,25 @@ class Window(Frame):
         print("Exported to ADIF")
 
     def writeAdif(self, row):
+        band = self.freqToBand(row[3])
         self.fAdif.write("<operator:"+str(len(self.callsign))+">"+self.callsign)
-        self.fAdif.write("<call:"+str(len(row[2]))+">"+str(row[2]))
-        self.fAdif.write("<qso_date_off:>"+str(len(row[0]))+">"+str(row[0]))
-        self.fAdif.write("<time_off:"+str(len(row[1]))+">"+str(row[1]))
-        self.fAdif.write("<freq:"+str(len(row[3]))+">"+str(row[3]))
-        self.fAdif.write("<mode:"+str(len(row[12]))+">"+str(row[12]))
-        self.fAdif.write("<rst_sent:"+str(len(row[4]))+">"+str(row[4]))
-        self.fAdif.write("<rst_rcvd:"+str(len(row[5]))+">"+str(row[5]))
-        self.fAdif.write("<state:"+str(len(row[8]))+">"+str(row[8]))
-        self.fAdif.write("<qth:"+str(len(row[7]))+">"+str(row[7]))
-        self.fAdif.write("<tx_pwr:"+str(len(row[10]))+">"+str(row[10]))
-        self.fAdif.write("<my_sota_ref:"+str(len(row[12]))+">"+str(row[12]))
-        self.fAdif.write("<sota_ref:"+str(len(row[13]))+">"+str(row[13]))
-        self.fAdif.write("<my_sig_info:"+str(len(row[14]))+">"+str(row[14]))
-        self.fAdif.write("<gridsquare:"+str(len(row[9]))+">"+str(row[9]))
+        self.fAdif.write("<call:"+str(len(row[2]))+">"+row[2])
+        self.fAdif.write("<qso_date:"+str(len(row[0]))+">"+row[0])
+        self.fAdif.write("<qso_date_off:>"+str(len(row[0]))+">"+row[0])
+        self.fAdif.write("<time_on:"+str(len(row[1]))+">"+row[1])
+        self.fAdif.write("<time_off:"+str(len(row[1]))+">"+row[1])
+        self.fAdif.write("<freq:"+str(len(row[3]))+">"+row[3])
+        self.fAdif.write("<band:"+str(len(band))+">"+band)
+        self.fAdif.write("<mode:"+str(len(row[11]))+">"+row[11])
+        self.fAdif.write("<rst_sent:"+str(len(row[4]))+">"+row[4])
+        self.fAdif.write("<rst_rcvd:"+str(len(row[5]))+">"+row[5])
+        self.fAdif.write("<state:"+str(len(row[8]))+">"+row[8])
+        self.fAdif.write("<qth:"+str(len(row[7]))+">"+row[7])
+        self.fAdif.write("<tx_pwr:"+str(len(row[10]))+">"+row[10])
+        self.fAdif.write("<my_sota_ref:"+str(len(row[12]))+">"+row[12])
+        self.fAdif.write("<sota_ref:"+str(len(row[13]))+">"+row[13])
+        self.fAdif.write("<my_sig_info:"+str(len(row[14]))+">"+row[14])
+        self.fAdif.write("<gridsquare:"+str(len(row[9]))+">"+row[9])
         self.fAdif.write("<eor>\n")
 
     def writeAdifHeader(self):
@@ -258,6 +263,50 @@ class Window(Frame):
         self.fAdif.write("\n<ADIF_VER:5>3.1.0 \n")
         self.fAdif.write("<PROGRAMID:12>AA6XA logger \n")
         self.fAdif.write("<PROGRAMVERSION:3>0.1 \n<EOH>\n\n")
+
+    def freqToBand(self, freq):
+        #Note: freq is assumed to be a string. 
+        #To Do: check the type of freq
+        mhz = int(float(freq))
+        if mhz==1:
+            band='160m'
+        elif mhz==3:
+            band='80m'
+        elif mhz==7:
+            band=='40m'
+        elif mhz==10:
+            band='30m'
+        elif mhz==14:
+            band='20m'
+        elif mhz==18:
+            band='17m'
+        elif mhz==21:
+            band='15m'
+        elif mhz==24:
+            band='12m'
+        elif mhz==28 or mhz==29:
+            band='10m'
+        elif mhz>=50 and mhz<=54:
+            band='6m'
+        elif mhz>=144 and mhz<=148:
+            band='2m'
+        elif mhz>=222 and mhz<=225:
+            band='1.25m'
+        elif mhz>=420 and mhz<=450:
+            band='70cm'
+        elif mhz>=902 and mhz<=928:
+            band='33cm'
+        elif mhz>=1240 and mhz<=1300:
+            band='23cm'
+        elif mhz>=10000 and mhz<=10500:
+            band='3cm'
+        elif mhz>=119980 and mhz<=120020:
+            band='2.5mm'
+        else:
+            md.showerror('Not a band',\
+                'Entered frequency is not in a supported band')
+            band = -1
+        return band
 
     def vhfTest(self):
         print("Exported VHF Contest Log")
@@ -269,9 +318,9 @@ class Window(Frame):
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
         self.logNameEnt.insert(0,self.logFile)
-        print("Opened new Log "+self.logFile)
 
     def newLog(self):
+        self.logFile = fd.askopen
         print("Created new Log")
 
 
