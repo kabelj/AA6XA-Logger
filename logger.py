@@ -1,25 +1,9 @@
 from tkinter import *
 import tkinter.filedialog as fd
+import tkinter.messagebox as md
 import csv
+import configparser
 from datetime import datetime
-
-
-class FilenamePopup(Frame):
-    def __init__(self, master):
-        Frame.__init__(self,master)
-        top=self.top=Toplevel(master)
-        self.pack(fill=BOTH, expand=1)
-
-        promptTxt = Label(self, text="Enter Log Name:")
-        promptTxt.pack()
-        self.nameEnt = Entry(self)
-        self.nameEnt.pack()
-        button = Button(self, text="Enter", command=self.enterBtn)
-
-    def enterBtn(self):
-        self.value = self.nameEnt.get()
-        print("enter button pressed")
-        self.top.destroy()
 
 class Window(Frame):
     def __init__(self, master=None):
@@ -27,9 +11,11 @@ class Window(Frame):
         self.master=master
         self.pack(fill=BOTH, expand=1)
 
-        #Defaults, for now
-        #self.logFile = open("test.log",'a+')
-        self.callsign = 'AA6XA'
+        #Read and set defaults
+        config = configparser.ConfigParser()
+        config.read('loggersettings')
+        self.callsign = config['STATION']['callsign']
+        self.myGrid = config['STATION']['grid']
 
         #Add Menus
         menu = Menu(self.master)
@@ -51,7 +37,7 @@ class Window(Frame):
         #Date
         dateTxt = Label(self, text="Date")
         dateTxt.grid(row=0,column=0)
-        self.dateEnt = Entry(self,width=10) #,textvariable=dateText)
+        self.dateEnt = Entry(self,width=10)
         self.dateEnt.grid(row=0,column=1)
         #Time
         timeTxt = Label(self, text="Time (UTC)")
@@ -132,14 +118,14 @@ class Window(Frame):
         self.logNameEnt.grid(row=7,column=1,columnspan=4)
         #SOTA CSV File name
         sotaNameTxt = Label(self, text="SOTA Filename")
-        sotaNameTxt.grid(row=8,column=2)
-        self.sotaNameEnt = Entry(self,width=10)
-        self.sotaNameEnt.grid(row=8,column=3)
+        sotaNameTxt.grid(row=8,column=0)
+        self.sotaNameEnt = Entry(self,width=30)
+        self.sotaNameEnt.grid(row=8,column=1,columnspan=3)
         #ADIF Filename
         adifNameTxt = Label(self, text="ADIF Filename")
         adifNameTxt.grid(row=8,column=4)
-        self.adifNameEnt = Entry(self,width=10)
-        self.adifNameEnt.grid(row=8,column=5)
+        self.adifNameEnt = Entry(self,width=30)
+        self.adifNameEnt.grid(row=8,column=5,columnspan=3)
 
         #QSO List
         self.qsoListTxt = Label(self, bg="white",text="test")
@@ -152,14 +138,18 @@ class Window(Frame):
         exitBtn = Button(self, text="Exit", command=self.clickExitBtn)
         exitBtn.grid(row=7,column=7)
 
+        #Ask for log file
+        filetypes = (('Log Files','*.log'),('All Files','*.*'))
+        self.logFile = fd.askopenfilename(initialdir='./',\
+            filetypes=filetypes,title='Select Log File')
+        #Set edit in gui
+        self.logNameEnt.insert(0,self.logFile)
+
     def clickExitBtn(self):
         exit()
 
     def logQsoBtn(self):
-        #make sure we have a valid log name to save to
-        #if self.logFile==''
-        #    self.logFile=self.logNameEnt.get()
-
+        #open log file
         self.logFile = open(self.logNameEnt.get(),'a+')
 
         #get data from text fields
@@ -178,17 +168,21 @@ class Window(Frame):
         sota = self.sotaEnt.get()
         s2s = self.s2sEnt.get()
         wwff = self.wwffEnt.get()
+
         #write into a big string
         qso = date+','+time+','+call+','+freq+','+rstS+','+rstR+','+\
             name+','+qth+','+state+','+grid+','+power+','+mode+','+\
             sota+','+s2s+','+wwff+'\n'
+
         #write to the log
         self.logFile.write(qso)
+
         #update list on screen
         qsoList = ['']*5
         for i in range(0,4):
             qsoList[i] = self.logFile.readline()
         self.qsoListTxt.configure(text=qso)
+
         #clear fields
         self.timeEnt.delete(0,'end')
         self.callEnt.delete(0,'end')
@@ -202,7 +196,14 @@ class Window(Frame):
 
     def exportSota(self):
         #open the SOTA CSV file
-        fSota = open(self.sotaNameEnt.get(),'w')
+        if self.sotaNameEnt.get()=='':
+            filetypes = (('CSV Files','*.csv'),('All Files','*.*'))
+            fname = fd.asksaveasfilename(initialdir='./',\
+                filetypes=filetypes,title='CSV File Name')
+            self.sotaNameEnt.insert(0,fname)
+            fSota = open(fname,'w')
+        else:
+            fSota = open(self.sotaNameEnt.get(),'w')
         self.logFile = open(self.logNameEnt.get(),'r')
 
         #Read each line in the log, write corresponding line to CSV
@@ -217,8 +218,15 @@ class Window(Frame):
 
     def exportWwff(self):
         #Open the adif file
-        self.fAdif = open(self.adifNameEnt.get(),'w')
         self.logFile = open(self.logNameEnt.get(),'r')
+        if self.adifNameEnt.get()=='':
+            filetypes = (('ADIF Files','*.adi'),('All Files','*.*'))
+            fname = fd.asksaveasfilename(initialdir='./',\
+                filetypes=filetypes,title='ADIF File Name')
+            self.adifNameEnt.insert(0,fname)
+            self.fAdif = open(fname,'w')
+        else:
+            self.fAdif = open(self.adifNameEnt.get(),'w')
 
         #Write ADIF Header
         self.writeAdifHeader()
@@ -232,35 +240,86 @@ class Window(Frame):
 
         self.fAdif.close()
         self.logFile.close()
-        print("Exported to ADIF")
 
     def writeAdif(self, row):
-        self.fAdif.write("<operator:"+str(len(self.callsign))+">"+self.callsign)
-        self.fAdif.write("<call:"+str(len(row[2]))+">"+str(row[2]))
-        self.fAdif.write("<qso_date_off:>"+str(len(row[0]))+">"+str(row[0]))
-        self.fAdif.write("<time_off:"+str(len(row[1]))+">"+str(row[1]))
-        self.fAdif.write("<freq:"+str(len(row[3]))+">"+str(row[3]))
-        self.fAdif.write("<mode:"+str(len(row[12]))+">"+str(row[12]))
-        self.fAdif.write("<rst_sent:"+str(len(row[4]))+">"+str(row[4]))
-        self.fAdif.write("<rst_rcvd:"+str(len(row[5]))+">"+str(row[5]))
-        self.fAdif.write("<state:"+str(len(row[8]))+">"+str(row[8]))
-        self.fAdif.write("<qth:"+str(len(row[7]))+">"+str(row[7]))
-        self.fAdif.write("<tx_pwr:"+str(len(row[10]))+">"+str(row[10]))
-        self.fAdif.write("<my_sota_ref:"+str(len(row[12]))+">"+str(row[12]))
-        self.fAdif.write("<sota_ref:"+str(len(row[13]))+">"+str(row[13]))
-        self.fAdif.write("<my_sig_info:"+str(len(row[14]))+">"+str(row[14]))
-        self.fAdif.write("<gridsquare:"+str(len(row[9]))+">"+str(row[9]))
+        band = self.freqToBand(row[3])
+        self.fAdif.write("<operator:"+str(len(self.callsign))+\
+            ">"+self.callsign)
+        self.fAdif.write("<call:"+str(len(row[2]))+">"+row[2])
+        self.fAdif.write("<qso_date:"+str(len(row[0]))+">"+row[0])
+        self.fAdif.write("<qso_date_off:>"+str(len(row[0]))+">"+row[0])
+        self.fAdif.write("<time_on:"+str(len(row[1]))+">"+row[1])
+        self.fAdif.write("<time_off:"+str(len(row[1]))+">"+row[1])
+        self.fAdif.write("<freq:"+str(len(row[3]))+">"+row[3])
+        self.fAdif.write("<band:"+str(len(band))+">"+band)
+        self.fAdif.write("<mode:"+str(len(row[11]))+">"+row[11])
+        self.fAdif.write("<rst_sent:"+str(len(row[4]))+">"+row[4])
+        self.fAdif.write("<rst_rcvd:"+str(len(row[5]))+">"+row[5])
+        self.fAdif.write("<state:"+str(len(row[8]))+">"+row[8])
+        self.fAdif.write("<qth:"+str(len(row[7]))+">"+row[7])
+        self.fAdif.write("<tx_pwr:"+str(len(row[10]))+">"+row[10])
+        self.fAdif.write("<my_sota_ref:"+str(len(row[12]))+">"+row[12])
+        self.fAdif.write("<sota_ref:"+str(len(row[13]))+">"+row[13])
+        self.fAdif.write("<my_sig_info:"+str(len(row[14]))+">"+row[14])
+        self.fAdif.write("<gridsquare:"+str(len(row[9]))+">"+row[9])
         self.fAdif.write("<eor>\n")
 
     def writeAdifHeader(self):
         now = datetime.now().strftime('%d/%m/%Y %H:%M')
-        self.fAdif.write("Exported on "+now+' for '+self.callsign+'\n')
+        self.fAdif.write("Exported on "+now+' for '+self.callsign+' \n')
         self.fAdif.write("\n<ADIF_VER:5>3.1.0 \n")
         self.fAdif.write("<PROGRAMID:12>AA6XA logger \n")
-        self.fAdif.write("<PROGRAMVERSION:3>0.1 \n<EOH>\n\n")
+        self.fAdif.write("<PROGRAMVERSION:"+str(len(version))+">"\
+            +version+" \n<EOH>\n\n")
+
+    def freqToBand(self, freq):
+        #Note: freq is assumed to be a string.
+        #To Do: check the type of freq
+        mhz = int(float(freq))
+        if mhz==1:
+            band='160m'
+        elif mhz==3:
+            band='80m'
+        elif mhz==5:
+            band='60m'
+        elif mhz==7:
+            band='40m'
+        elif mhz==10:
+            band='30m'
+        elif mhz==14:
+            band='20m'
+        elif mhz==18:
+            band='17m'
+        elif mhz==21:
+            band='15m'
+        elif mhz==24:
+            band='12m'
+        elif mhz==28 or mhz==29:
+            band='10m'
+        elif mhz>=50 and mhz<=54:
+            band='6m'
+        elif mhz>=144 and mhz<=148:
+            band='2m'
+        elif mhz>=222 and mhz<=225:
+            band='1.25m'
+        elif mhz>=420 and mhz<=450:
+            band='70cm'
+        elif mhz>=902 and mhz<=928:
+            band='33cm'
+        elif mhz>=1240 and mhz<=1300:
+            band='23cm'
+        elif mhz>=10000 and mhz<=10500:
+            band='3cm'
+        elif mhz>=119980 and mhz<=120020:
+            band='2.5mm'
+        else:
+            md.showerror('Not a band',\
+                'Entered frequency is not in a supported band')
+            band = -1
+        return band
 
     def vhfTest(self):
-        print("Exported VHF Contest Log")
+        print("VHF Contest Log not exported ..... yet")
 
     def openLog(self):
         #File open Dialog
@@ -269,17 +328,19 @@ class Window(Frame):
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
         self.logNameEnt.insert(0,self.logFile)
-        print("Opened new Log "+self.logFile)
 
     def newLog(self):
-        print("Created new Log")
+        #File dialog
+        filetypes = (('Log Files','*.log'),('All Files','*.*'))
+        self.logFile = fd.asksaveasfilename(initialdir='./',\
+            filetypes=filetypes,title='New Log File')
+        #Set the text in the gui
+        self.logNameEnt.insert(0,self.logFile)
 
 
 root=Tk()
-#dateText=StringVar()
-
 app=Window(root)
-
-root.wm_title("AA6XA Logger, v0.1")
+version = "0.2"
+root.wm_title("AA6XA Logger, v"+version)
 root.geometry("810x300")
 root.mainloop()
