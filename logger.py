@@ -15,7 +15,7 @@ class Window(Frame):
         config = configparser.ConfigParser()
         config.read('loggersettings')
         self.callsign = config['STATION']['callsign']
-        print(self.callsign)
+        self.myGrid = config['STATION']['grid']
 
         #Add Menus
         menu = Menu(self.master)
@@ -266,10 +266,11 @@ class Window(Frame):
 
     def writeAdifHeader(self):
         now = datetime.now().strftime('%d/%m/%Y %H:%M')
-        self.fAdif.write("Exported on "+now+' for '+self.callsign+'\n')
+        self.fAdif.write("Exported on "+now+' for '+self.callsign+' \n')
         self.fAdif.write("\n<ADIF_VER:5>3.1.0 \n")
         self.fAdif.write("<PROGRAMID:12>AA6XA logger \n")
-        self.fAdif.write("<PROGRAMVERSION:3>0.1 \n<EOH>\n\n")
+        self.fAdif.write("<PROGRAMVERSION:"+str(len(version))+">"\
+            +version+" \n<EOH>\n\n")
 
     def freqToBand(self, freq):
         #Note: freq is assumed to be a string.
@@ -338,10 +339,8 @@ class Window(Frame):
 
 
 root=Tk()
-#dateText=StringVar()
-
 app=Window(root)
-
-root.wm_title("AA6XA Logger, v0.1")
+version = "0.2"
+root.wm_title("AA6XA Logger, v"+version)
 root.geometry("810x300")
 root.mainloop()
