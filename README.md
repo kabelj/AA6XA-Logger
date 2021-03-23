@@ -26,7 +26,6 @@ logger to the public:
 There are some less important things to take care of too:
 > Export cabrillo for VHF Contests
 > Visual improvements to gui
-> Ask for export file name in prompt
 > Any other export settings in a prompt
 > Change default log location in settings
 > Export cabrillo for other contests

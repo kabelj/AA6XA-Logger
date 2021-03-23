@@ -4,24 +4,6 @@ import tkinter.messagebox as md
 import csv
 from datetime import datetime
 
-
-class FilenamePopup(Frame):
-    def __init__(self, master):
-        Frame.__init__(self,master)
-        top=self.top=Toplevel(master)
-        self.pack(fill=BOTH, expand=1)
-
-        promptTxt = Label(self, text="Enter Log Name:")
-        promptTxt.pack()
-        self.nameEnt = Entry(self)
-        self.nameEnt.pack()
-        button = Button(self, text="Enter", command=self.enterBtn)
-
-    def enterBtn(self):
-        self.value = self.nameEnt.get()
-        print("enter button pressed")
-        self.top.destroy()
-
 class Window(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
@@ -29,7 +11,6 @@ class Window(Frame):
         self.pack(fill=BOTH, expand=1)
 
         #Defaults, for now
-        #self.logFile = open("test.log",'a+')
         self.callsign = 'AA6XA'
 
         #Add Menus
@@ -52,7 +33,7 @@ class Window(Frame):
         #Date
         dateTxt = Label(self, text="Date")
         dateTxt.grid(row=0,column=0)
-        self.dateEnt = Entry(self,width=10) #,textvariable=dateText)
+        self.dateEnt = Entry(self,width=10)
         self.dateEnt.grid(row=0,column=1)
         #Time
         timeTxt = Label(self, text="Time (UTC)")
@@ -133,14 +114,14 @@ class Window(Frame):
         self.logNameEnt.grid(row=7,column=1,columnspan=4)
         #SOTA CSV File name
         sotaNameTxt = Label(self, text="SOTA Filename")
-        sotaNameTxt.grid(row=8,column=2)
-        self.sotaNameEnt = Entry(self,width=10)
-        self.sotaNameEnt.grid(row=8,column=3)
+        sotaNameTxt.grid(row=8,column=0)
+        self.sotaNameEnt = Entry(self,width=30)
+        self.sotaNameEnt.grid(row=8,column=1,columnspan=3)
         #ADIF Filename
         adifNameTxt = Label(self, text="ADIF Filename")
         adifNameTxt.grid(row=8,column=4)
-        self.adifNameEnt = Entry(self,width=10)
-        self.adifNameEnt.grid(row=8,column=5)
+        self.adifNameEnt = Entry(self,width=30)
+        self.adifNameEnt.grid(row=8,column=5,columnspan=3)
 
         #QSO List
         self.qsoListTxt = Label(self, bg="white",text="test")
@@ -203,7 +184,14 @@ class Window(Frame):
 
     def exportSota(self):
         #open the SOTA CSV file
-        fSota = open(self.sotaNameEnt.get(),'w')
+        if self.sotaNameEnt.get()=='':
+            filetypes = (('CSV Files','*.csv'),('All Files','*.*'))
+            fname = fd.asksaveasfilename(initialdir='./',\
+                filetypes=filetypes,title='CSV File Name')
+            self.sotaNameEnt.insert(0,fname)
+            fSota = open(fname,'w')
+        else:
+            fSota = open(self.sotaNameEnt.get(),'w')
         self.logFile = open(self.logNameEnt.get(),'r')
 
         #Read each line in the log, write corresponding line to CSV
@@ -218,8 +206,15 @@ class Window(Frame):
 
     def exportWwff(self):
         #Open the adif file
-        self.fAdif = open(self.adifNameEnt.get(),'w')
         self.logFile = open(self.logNameEnt.get(),'r')
+        if self.adifNameEnt.get()=='':
+            filetypes = (('ADIF Files','*.adi'),('All Files','*.*'))
+            fname = fd.asksaveasfilename(initialdir='./',\
+                filetypes=filetypes,title='ADIF File Name')
+            self.adifNameEnt.insert(0,fname)
+            self.fAdif = open(fname,'w')
+        else:
+            self.fAdif = open(self.adifNameEnt.get(),'w')
 
         #Write ADIF Header
         self.writeAdifHeader()
@@ -233,11 +228,11 @@ class Window(Frame):
 
         self.fAdif.close()
         self.logFile.close()
-        print("Exported to ADIF")
 
     def writeAdif(self, row):
         band = self.freqToBand(row[3])
-        self.fAdif.write("<operator:"+str(len(self.callsign))+">"+self.callsign)
+        self.fAdif.write("<operator:"+str(len(self.callsign))+\
+            ">"+self.callsign)
         self.fAdif.write("<call:"+str(len(row[2]))+">"+row[2])
         self.fAdif.write("<qso_date:"+str(len(row[0]))+">"+row[0])
         self.fAdif.write("<qso_date_off:>"+str(len(row[0]))+">"+row[0])
@@ -265,15 +260,17 @@ class Window(Frame):
         self.fAdif.write("<PROGRAMVERSION:3>0.1 \n<EOH>\n\n")
 
     def freqToBand(self, freq):
-        #Note: freq is assumed to be a string. 
+        #Note: freq is assumed to be a string.
         #To Do: check the type of freq
         mhz = int(float(freq))
         if mhz==1:
             band='160m'
         elif mhz==3:
             band='80m'
+        elif mhz==5:
+            band='60m'
         elif mhz==7:
-            band=='40m'
+            band='40m'
         elif mhz==10:
             band='30m'
         elif mhz==14:
@@ -320,8 +317,12 @@ class Window(Frame):
         self.logNameEnt.insert(0,self.logFile)
 
     def newLog(self):
-        self.logFile = fd.askopen
-        print("Created new Log")
+        #File dialog
+        filetypes = (('Log Files','*.log'),('All Files','*.*'))
+        self.logFile = fd.asksaveasfilename(initialdir='./',\
+            filetypes=filetypes,title='New Log File')
+        #Set the text in the gui
+        self.logNameEnt.insert(0,self.logFile)
 
 
 root=Tk()
