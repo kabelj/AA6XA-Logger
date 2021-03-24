@@ -16,16 +16,18 @@ class Window(Frame):
         config.read('loggersettings')
         self.callsign = config['STATION']['callsign']
         self.myGrid = config['STATION']['grid']
+        self.defaultPath = config['LOGGER']['defaultpath']
+        print(self.defaultPath)
 
         #Add Menus
         menu = Menu(self.master)
         self.master.config(menu=menu)
 
         fileMenu = Menu(menu)
-        fileMenu.add_command(label="Open Log", command=self.openLog)
-        fileMenu.add_command(label="New Log", command=self.newLog)
-        fileMenu.add_command(label="Exit", command=self.clickExitBtn)
-        menu.add_cascade(label="File", menu=fileMenu)
+        fileMenu.add_command(label="Open Log",command=self.openLog)
+        fileMenu.add_command(label="New Log",command=self.newLog)
+        fileMenu.add_command(label="Exit",command=self.clickExitBtn)
+        menu.add_cascade(label="File",menu=fileMenu)
 
         exportMenu = Menu(menu)
         exportMenu.add_command(label="SOTA CSV",command=self.exportSota)
@@ -36,96 +38,101 @@ class Window(Frame):
         #Data Entry Fields
         #Date
         dateTxt = Label(self, text="Date")
-        dateTxt.grid(row=0,column=0)
+        dateTxt.grid(row=0,column=0,sticky="E")
         self.dateEnt = Entry(self,width=10)
         self.dateEnt.grid(row=0,column=1)
         #Time
         timeTxt = Label(self, text="Time (UTC)")
-        timeTxt.grid(row=0,column=2)
+        timeTxt.grid(row=0,column=2,sticky="E")
         self.timeEnt = Entry(self, width=4)
-        self.timeEnt.grid(row=0,column=3)
+        self.timeEnt.grid(row=0,column=3,sticky="W")
         #Callsign
         callTxt = Label(self, text="Callsign")
-        callTxt.grid(row=0,column=4)
+        callTxt.grid(row=0,column=4,sticky='E')
         self.callEnt = Entry(self, width=10)
-        self.callEnt.grid(row=0,column=5)
+        self.callEnt.grid(row=0,column=5,sticky="W")
         #Frequency
         freqTxt = Label(self, text="Frequency")
-        freqTxt.grid(row=0,column=6)
+        freqTxt.grid(row=0,column=6,sticky="E")
         self.freqEnt = Entry(self, width=9)
-        self.freqEnt.grid(row=0,column=7)
+        self.freqEnt.grid(row=0,column=7,sticky="W")
         #RST Sent
         rstSentTxt = Label(self, text="RST Sent")
-        rstSentTxt.grid(row=1,column=0)
+        rstSentTxt.grid(row=1,column=0,sticky="E")
         self.rstSentEnt = Entry(self, width=3)
-        self.rstSentEnt.grid(row=1,column=1)
+        self.rstSentEnt.grid(row=1,column=1,sticky="W")
         #RST Received
         rstRxTxt = Label(self, text="RST Received")
-        rstRxTxt.grid(row=1,column=2)
+        rstRxTxt.grid(row=1,column=2,sticky="E")
         self.rstRxEnt = Entry(self, width=3)
-        self.rstRxEnt.grid(row=1,column=3)
+        self.rstRxEnt.grid(row=1,column=3,sticky="W")
         #Name
         nameTxt = Label(self, text="Name")
-        nameTxt.grid(row=1,column=4)
+        nameTxt.grid(row=1,column=4,sticky="E")
         self.nameEnt = Entry(self, width=10)
-        self.nameEnt.grid(row=1,column=5)
+        self.nameEnt.grid(row=1,column=5,sticky="W")
         #QTH
         qthTxt = Label(self, text="QTH")
-        qthTxt.grid(row=1,column=6)
+        qthTxt.grid(row=1,column=6,sticky="E")
         self.qthEnt = Entry(self, width=10)
-        self.qthEnt.grid(row=1,column=7)
+        self.qthEnt.grid(row=1,column=7,sticky="W")
         #State
         stateTxt = Label(self, text="State")
-        stateTxt.grid(row=2,column=0)
+        stateTxt.grid(row=2,column=0,sticky="E")
         self.stateEnt = Entry(self, width=3)
-        self.stateEnt.grid(row=2, column=1)
+        self.stateEnt.grid(row=2, column=1,sticky="W")
         #Grid
         gridTxt = Label(self, text="Grid")
-        gridTxt.grid(row=2,column=2)
+        gridTxt.grid(row=2,column=2,sticky="E")
         self.gridEnt = Entry(self, width=6)
-        self.gridEnt.grid(row=2,column=3)
+        self.gridEnt.grid(row=2,column=3,sticky="W")
         #Power
         pwrTxt = Label(self, text="Power")
-        pwrTxt.grid(row=2,column=4)
+        pwrTxt.grid(row=2,column=4,sticky="E")
         self.pwrEnt = Entry(self,width=4)
-        self.pwrEnt.grid(row=2,column=5)
+        self.pwrEnt.grid(row=2,column=5,sticky="W")
         #Mode
         modeTxt = Label(self, text="Mode")
-        modeTxt.grid(row=2,column=6)
-        self.modeEnt = Entry(self, width=4)
-        self.modeEnt.insert(0,"CW")
-        self.modeEnt.grid(row=2,column=7)
+        modeTxt.grid(row=2,column=6,sticky="E")
+        #self.modeEnt = Entry(self, width=4)
+        #self.modeEnt.insert(0,"CW")
+        #self.modeEnt.grid(row=2,column=7,sticky="W")
+        choices = {'CW','SSB','FM','DIGI'}
+        self.modeEnt = StringVar(self)
+        self.modeEnt.set('CW')
+        popupMenu = OptionMenu(self, self.modeEnt, *choices)
+        popupMenu.grid(row=2,column=7,sticky="W")
         #SOTA Peak
         sotaTxt = Label(self, text="SOTA Peak")
-        sotaTxt.grid(row=3,column=0)
+        sotaTxt.grid(row=3,column=0,sticky="E")
         self.sotaEnt = Entry(self, width=10)
-        self.sotaEnt.grid(row=3,column=1)
+        self.sotaEnt.grid(row=3,column=1,sticky="W")
         #S2S Peak
         s2sTxt = Label(self, text="S2S Peak")
-        s2sTxt.grid(row=3,column=2)
+        s2sTxt.grid(row=3,column=2,sticky="E")
         self.s2sEnt = Entry(self, width=10)
-        self.s2sEnt.grid(row=3,column=3)
+        self.s2sEnt.grid(row=3,column=3,sticky="W")
         #WWFF Ref
         wwffTxt = Label(self, text="WWFF Ref")
-        wwffTxt.grid(row=3,column=4)
+        wwffTxt.grid(row=3,column=4,sticky="E")
         self.wwffEnt = Entry(self, width=9)
-        self.wwffEnt.grid(row=3,column=5)
+        self.wwffEnt.grid(row=3,column=5,sticky="W")
 
         #log File Name
         logNameTxt = Label(self, text="Log Filename")
-        logNameTxt.grid(row=7,column=0)
+        logNameTxt.grid(row=7,column=0,sticky="E")
         self.logNameEnt = Entry(self,width=35)
-        self.logNameEnt.grid(row=7,column=1,columnspan=4)
+        self.logNameEnt.grid(row=7,column=1,columnspan=4,sticky="W")
         #SOTA CSV File name
         sotaNameTxt = Label(self, text="SOTA Filename")
-        sotaNameTxt.grid(row=8,column=0)
+        sotaNameTxt.grid(row=8,column=0,sticky="E")
         self.sotaNameEnt = Entry(self,width=30)
-        self.sotaNameEnt.grid(row=8,column=1,columnspan=3)
+        self.sotaNameEnt.grid(row=8,column=1,columnspan=3,sticky="W")
         #ADIF Filename
         adifNameTxt = Label(self, text="ADIF Filename")
-        adifNameTxt.grid(row=8,column=4)
+        adifNameTxt.grid(row=8,column=4,sticky="E")
         self.adifNameEnt = Entry(self,width=30)
-        self.adifNameEnt.grid(row=8,column=5,columnspan=3)
+        self.adifNameEnt.grid(row=8,column=5,columnspan=3,sticky="W")
 
         #QSO List
         self.qsoListTxt = Label(self, bg="white",text="test")
@@ -133,14 +140,14 @@ class Window(Frame):
 
         #Log Button
         logBtn = Button(self, text="Log QSO", command=self.logQsoBtn)
-        logBtn.grid(row=7,column=5) #place(x=300,y=200)
+        logBtn.grid(row=7,column=5)
         #Exit Button
         exitBtn = Button(self, text="Exit", command=self.clickExitBtn)
         exitBtn.grid(row=7,column=7)
 
         #Ask for log file
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
-        self.logFile = fd.askopenfilename(initialdir='./',\
+        self.logFile = fd.askopenfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
         self.logNameEnt.insert(0,self.logFile)
@@ -198,7 +205,7 @@ class Window(Frame):
         #open the SOTA CSV file
         if self.sotaNameEnt.get()=='':
             filetypes = (('CSV Files','*.csv'),('All Files','*.*'))
-            fname = fd.asksaveasfilename(initialdir='./',\
+            fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='CSV File Name')
             self.sotaNameEnt.insert(0,fname)
             fSota = open(fname,'w')
@@ -221,7 +228,7 @@ class Window(Frame):
         self.logFile = open(self.logNameEnt.get(),'r')
         if self.adifNameEnt.get()=='':
             filetypes = (('ADIF Files','*.adi'),('All Files','*.*'))
-            fname = fd.asksaveasfilename(initialdir='./',\
+            fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='ADIF File Name')
             self.adifNameEnt.insert(0,fname)
             self.fAdif = open(fname,'w')
@@ -324,7 +331,7 @@ class Window(Frame):
     def openLog(self):
         #File open Dialog
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
-        self.logFile = fd.askopenfilename(initialdir='./',\
+        self.logFile = fd.askopenfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
         self.logNameEnt.insert(0,self.logFile)
@@ -332,7 +339,7 @@ class Window(Frame):
     def newLog(self):
         #File dialog
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
-        self.logFile = fd.asksaveasfilename(initialdir='./',\
+        self.logFile = fd.asksaveasfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='New Log File')
         #Set the text in the gui
         self.logNameEnt.insert(0,self.logFile)
@@ -342,5 +349,5 @@ root=Tk()
 app=Window(root)
 version = "0.2"
 root.wm_title("AA6XA Logger, v"+version)
-root.geometry("810x300")
+root.geometry("800x300")
 root.mainloop()

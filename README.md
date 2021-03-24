@@ -61,7 +61,6 @@ There are plenty of improvements to add:
 > Input checking (valid date, time, etc)
 > Visual improvements to gui
 > Any other export settings in a prompt
-> Change default log location in settings
 > Export cabrillo for other contests
 
 And some things that would be nice to have, but I may never implement, since 

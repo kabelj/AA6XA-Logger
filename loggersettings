@@ -2,3 +2,6 @@
 callsign = AA6XA
 name = Jeff
 grid = CM97
+
+[LOGGER]
+defaultpath = '../logger/'
