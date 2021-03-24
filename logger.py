@@ -17,7 +17,6 @@ class Window(Frame):
         self.callsign = config['STATION']['callsign']
         self.myGrid = config['STATION']['grid']
         self.defaultPath = config['LOGGER']['defaultpath']
-        print(self.defaultPath)
 
         #Add Menus
         menu = Menu(self.master)
@@ -151,6 +150,9 @@ class Window(Frame):
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
         self.logNameEnt.insert(0,self.logFile)
+
+        #Default <enter> to Log QSO
+        master.bind('<Return>',lambda event:self.logQsoBtn())
 
     def clickExitBtn(self):
         exit()
