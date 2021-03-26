@@ -3,10 +3,11 @@ My Portable-OTA logger.
 
 
 This logger is designed to be an easy to use logger to enter in handwritten 
-logs after various portable on-the-air activations, e.g. SOTA, WWFF, POTA. 
+logs after various portable on-the-air activations, e.g. SOTA, WWFF, contests 
+from summits or parks. 
 It is written in Python, so it should be easy to use on any computer that has 
-Python installed. It will export a CSV file formatted for the SOTA database, 
-ADIF Files, so you can upload it for WWFF/POTA or to ClubLog or other general 
+Python installed. It can export a CSV file formatted for the SOTA database, 
+ADIF Files for upload it for WWFF/POTA, or to ClubLog or other general 
 purpose logger, and Cabrillo files for a few supported contests. If you're 
 looking for a full featured logger that will keep track of your DX and 
 control your transceiver, look elsewhere. This is a simple one.
@@ -18,15 +19,15 @@ If you know how to get files from GitHub, use your regular procedure.
 
 Linux:
 cd to the directory you want to put the program in, then type
-"git clone https://github.com/kabelj/AA6XA-Logger.git"
+`git clone https://github.com/kabelj/AA6XA-Logger.git`
 This will download all the necessary files to the directory. It can then be 
-run with the command "python logger.py"
+run with the command `python logger.py`
 
 Mac:
 If you have git installed, you can follow the instructions above. If not, 
 click the green "download code" button and download the Zip file. Unzip this 
 in the location you want to save it. Open a terminal window, cd to that 
-directory, and run the command "python logger.py"
+directory, and run the command `python logger.py`
 
 Windows:
 Follow the Linux instructions if you have Git installed. Otherwise follow 
@@ -39,6 +40,7 @@ everything works there, or even if these steps are accurate.
 In the directory with the code there is a file, "loggersettings", which 
 contains settings you should only have to set once, or very infrequently. 
 Open this and edit with your information.
+
 On opening the logger, it will prompt you to select a log file. This is 
 either a new or existing one. Enter in the log data, clicking <enter> or 
 "Save QSO" after each one. Selecting Export>"SOTA CSV" or Export>"WWFF ADIF" 
@@ -53,7 +55,7 @@ complaints or warnings. Be careful! If you do make a mistake, just open the
 
 Remember:
 - New log file for each activation
-- Limited data validation, currently
+- Limited data validation (currently)
 - No editing QSOs in the program. Use a text editor to fix
 
 ## Features not yet added
@@ -61,7 +63,7 @@ There are plenty of improvements to add:
 - Show the last few QSOs entered
 - Show those QSOs in a nice format
 - Export cabrillo for NAQP
-- Input checking (valid time,grid,RST, SOTA/WWFF refs, etc)
+- Input checking (valid time, grid, RST, SOTA/WWFF refs, etc)
 - Visual improvements to gui
 - Export cabrillo for other contests, if desired
 
@@ -85,7 +87,7 @@ need to manually cut/paste lines in a text editor to fix this.
 existing one, then File>New Log.
 - Only bands that I use are currently supported. This shouldn't matter 
 unless you're really into microwaves. (All HF/VHF/UHF are supported)
-- I haven't looked to closely at how Python datetime works, so be careful 
+- I haven't looked to closely at how Python's datetime works, so be careful 
 with dates where the month and day can be interchanged, e.g. 3/4/2021
 - VHF Cabrillo Export will allow you to export QSOs on non-contest bands
 
