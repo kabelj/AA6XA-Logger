@@ -155,6 +155,7 @@ class Window(Frame):
         self.logFile = fd.askopenfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
+        self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
 
         #Default <enter> to Log QSO
@@ -191,7 +192,17 @@ class Window(Frame):
             md.showerror("Date Error","Invalid Date!")
             self.dateEnt.focus_set()
             return
-        #add: time,freq,RST,grid, refs?
+        #band=self.freqToBand(freq,False)
+        try:
+            if self.freqToBand(freq,False)==-1:
+                raise ValueError("Oh no! An incorret band was entered!")
+        except ValueError:
+            md.showerror("Frequency Error",\
+                "Invalid Frequency!\n"\
+                "The frequency entered is not in a supported band!")
+            self.freqEnt.focus_set()
+            return
+        #add: time,RST,grid, refs?
 
         #write into a big string
         qso = date+','+time+','+call+','+freq+','+rstS+','+rstR+','+\
@@ -224,6 +235,7 @@ class Window(Frame):
             filetypes = (('CSV Files','*.csv'),('All Files','*.*'))
             fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='CSV File Name')
+            self.sotaNameEnt.delete(0,'end')
             self.sotaNameEnt.insert(0,fname)
             fSota = open(fname,'w')
         else:
@@ -247,6 +259,7 @@ class Window(Frame):
             filetypes = (('ADIF Files','*.adi'),('All Files','*.*'))
             fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='ADIF File Name')
+            self.adifNameEnt.delete(0,'end')
             self.adifNameEnt.insert(0,fname)
             self.fAdif = open(fname,'w')
         else:
@@ -308,25 +321,29 @@ class Window(Frame):
             cabBand='3500'
         elif mhz==5:
             band='60m'
+            cabBand='-1'
         elif mhz==7:
             band='40m'
             cabBand='7000'
         elif mhz==10:
             band='30m'
+            cabBand='-1'
         elif mhz==14:
             band='20m'
             cabBand='14000'
         elif mhz==18:
             band='17m'
+            cabBand='-1'
         elif mhz==21:
             band='15m'
             cabBand='21000'
         elif mhz==24:
             band='12m'
+            cabBand='-1'
         elif mhz==28 or mhz==29:
             band='10m'
             cabBand='28000'
-        elif mhz>=50 and mhz<=54:
+        elif mhz>=50 and mhz<54:
             band='6m'
             cabBand='50'
         elif mhz>=144 and mhz<=148:
@@ -351,8 +368,8 @@ class Window(Frame):
             band='2.5mm'
             cabBand='122G'
         else:
-            md.showerror('Not a band',\
-                'Entered frequency is not in a supported band')
+            #md.showerror('Not a band',\
+            #    'Entered frequency is not in a supported band')
             band = -1
             cabBand = -1
         #return band in the correct format
@@ -368,6 +385,7 @@ class Window(Frame):
             filetypes = (('Cabrillo Files','*.cbr'),('All Files','*.*'))
             fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='Cabrillo File Name')
+            self.vhfNameEnt.delete(0,'end')
             self.vhfNameEnt.insert(0,fname)
             self.fVhf = open(fname,'w')
         else:
@@ -397,7 +415,7 @@ class Window(Frame):
         elif row[11]=="FM":
             mode='FM'
         elif row[11]=="DIGI":
-            mode=='DG'
+            mode='DG'
         else:
             #Invalid mode, somehow
             mode=='-1'
@@ -443,6 +461,7 @@ class Window(Frame):
         self.logFile = fd.askopenfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
+        self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
 
     def newLog(self):
@@ -451,6 +470,7 @@ class Window(Frame):
         self.logFile = fd.asksaveasfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='New Log File')
         #Set the text in the gui
+        self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
 
 
