@@ -4,6 +4,7 @@ import tkinter.messagebox as md
 import csv
 import configparser
 from datetime import datetime
+from dateutil import parser
 
 class Window(Frame):
     def __init__(self, master=None):
@@ -12,11 +13,11 @@ class Window(Frame):
         self.pack(fill=BOTH, expand=1)
 
         #Read and set defaults
-        config = configparser.ConfigParser()
-        config.read('loggersettings')
-        self.callsign = config['STATION']['callsign']
-        self.myGrid = config['STATION']['grid']
-        self.defaultPath = config['LOGGER']['defaultpath']
+        self.config = configparser.ConfigParser()
+        self.config.read('loggersettings')
+        self.callsign = self.config['STATION']['callsign']
+        self.myGrid = self.config['STATION']['grid']
+        self.defaultPath = self.config['LOGGER']['defaultpath']
 
         #Add Menus
         menu = Menu(self.master)
@@ -51,7 +52,7 @@ class Window(Frame):
         self.callEnt = Entry(self, width=10)
         self.callEnt.grid(row=0,column=5,sticky="W")
         #Frequency
-        freqTxt = Label(self, text="Frequency")
+        freqTxt = Label(self, text="Freq (MHz)")
         freqTxt.grid(row=0,column=6,sticky="E")
         self.freqEnt = Entry(self, width=9)
         self.freqEnt.grid(row=0,column=7,sticky="W")
@@ -61,7 +62,7 @@ class Window(Frame):
         self.rstSentEnt = Entry(self, width=3)
         self.rstSentEnt.grid(row=1,column=1,sticky="W")
         #RST Received
-        rstRxTxt = Label(self, text="RST Received")
+        rstRxTxt = Label(self, text="RST Rcv'd")
         rstRxTxt.grid(row=1,column=2,sticky="E")
         self.rstRxEnt = Entry(self, width=3)
         self.rstRxEnt.grid(row=1,column=3,sticky="W")
@@ -118,20 +119,25 @@ class Window(Frame):
         self.wwffEnt.grid(row=3,column=5,sticky="W")
 
         #log File Name
-        logNameTxt = Label(self, text="Log Filename")
+        logNameTxt = Label(self, text="Log File")
         logNameTxt.grid(row=7,column=0,sticky="E")
         self.logNameEnt = Entry(self,width=35)
         self.logNameEnt.grid(row=7,column=1,columnspan=4,sticky="W")
         #SOTA CSV File name
-        sotaNameTxt = Label(self, text="SOTA Filename")
+        sotaNameTxt = Label(self, text="SOTA File")
         sotaNameTxt.grid(row=8,column=0,sticky="E")
         self.sotaNameEnt = Entry(self,width=30)
         self.sotaNameEnt.grid(row=8,column=1,columnspan=3,sticky="W")
         #ADIF Filename
-        adifNameTxt = Label(self, text="ADIF Filename")
+        adifNameTxt = Label(self, text="ADIF File")
         adifNameTxt.grid(row=8,column=4,sticky="E")
         self.adifNameEnt = Entry(self,width=30)
         self.adifNameEnt.grid(row=8,column=5,columnspan=3,sticky="W")
+        #VHF Filename
+        vhfNameTxt = Label(self, text="Cabrillo File")
+        vhfNameTxt.grid(row=9,column=0,sticky="E")
+        self.vhfNameEnt = Entry(self,width=30)
+        self.vhfNameEnt.grid(row=9,column=1,columnspan=3,sticky="W")
 
         #QSO List
         self.qsoListTxt = Label(self, bg="white",text="test")
@@ -177,6 +183,15 @@ class Window(Frame):
         sota = self.sotaEnt.get()
         s2s = self.s2sEnt.get()
         wwff = self.wwffEnt.get()
+
+        #Validate stuff
+        try:
+            parser.parse(date)
+        except ValueError:
+            md.showerror("Date Error","Invalid Date!")
+            self.dateEnt.focus_set()
+            return
+        #add: time,freq,RST,grid, refs?
 
         #write into a big string
         qso = date+','+time+','+call+','+freq+','+rstS+','+rstR+','+\
@@ -242,8 +257,8 @@ class Window(Frame):
 
         #Read each line, convert to adif form
         reader = csv.reader(self.logFile)
-        rownum = 0
-        adifData = []
+        #rownum = 0
+        #adifData = []
         for row in reader:
             self.writeAdif(row)
 
@@ -251,7 +266,7 @@ class Window(Frame):
         self.logFile.close()
 
     def writeAdif(self, row):
-        band = self.freqToBand(row[3])
+        band = self.freqToBand(row[3],False)
         self.fAdif.write("<operator:"+str(len(self.callsign))+\
             ">"+self.callsign)
         self.fAdif.write("<call:"+str(len(row[2]))+">"+row[2])
@@ -281,54 +296,146 @@ class Window(Frame):
         self.fAdif.write("<PROGRAMVERSION:"+str(len(version))+">"\
             +version+" \n<EOH>\n\n")
 
-    def freqToBand(self, freq):
+    def freqToBand(self, freq, cabrillo):
         #Note: freq is assumed to be a string.
         #To Do: check the type of freq
         mhz = int(float(freq))
         if mhz==1:
             band='160m'
+            cabBand='1800'
         elif mhz==3:
             band='80m'
+            cabBand='3500'
         elif mhz==5:
             band='60m'
         elif mhz==7:
             band='40m'
+            cabBand='7000'
         elif mhz==10:
             band='30m'
         elif mhz==14:
             band='20m'
+            cabBand='14000'
         elif mhz==18:
             band='17m'
         elif mhz==21:
             band='15m'
+            cabBand='21000'
         elif mhz==24:
             band='12m'
         elif mhz==28 or mhz==29:
             band='10m'
+            cabBand='28000'
         elif mhz>=50 and mhz<=54:
             band='6m'
+            cabBand='50'
         elif mhz>=144 and mhz<=148:
             band='2m'
+            cabBand='144'
         elif mhz>=222 and mhz<=225:
             band='1.25m'
+            cabBand='222'
         elif mhz>=420 and mhz<=450:
             band='70cm'
+            cabBand='432'
         elif mhz>=902 and mhz<=928:
             band='33cm'
+            cabBand='902'
         elif mhz>=1240 and mhz<=1300:
             band='23cm'
+            cabBand='1.2G'
         elif mhz>=10000 and mhz<=10500:
             band='3cm'
+            cabBand='10G'
         elif mhz>=119980 and mhz<=120020:
             band='2.5mm'
+            cabBand='122G'
         else:
             md.showerror('Not a band',\
                 'Entered frequency is not in a supported band')
             band = -1
-        return band
+            cabBand = -1
+        #return band in the correct format
+        if cabrillo:
+            return cabBand
+        else:
+            return band
 
     def vhfTest(self):
-        print("VHF Contest Log not exported ..... yet")
+        #Open the adif file
+        self.logFile = open(self.logNameEnt.get(),'r')
+        if self.vhfNameEnt.get()=='':
+            filetypes = (('Cabrillo Files','*.cbr'),('All Files','*.*'))
+            fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
+                filetypes=filetypes,title='Cabrillo File Name')
+            self.vhfNameEnt.insert(0,fname)
+            self.fVhf = open(fname,'w')
+        else:
+            self.fVhf = open(self.adifNameEnt.get(),'w')
+
+        #Write Cabrillo Header
+        self.writeVHFCabrilloHeader()
+
+        #Write QSOs to file
+        reader = csv.reader(self.logFile)
+        for row in reader:
+            self.writeVHFCabrillo(row)
+
+        #Write the last line.
+        self.fVhf.write("END-OF-LOG\n")
+        self.fVhf.close()
+
+    def writeVHFCabrillo(self,row):
+        #convert stuff to cabrillo format
+        #band
+        band = self.freqToBand(row[3],True)
+        #mode
+        if row[11]=="SSB":
+            mode = 'PH'
+        elif row[11]=="CW":
+            mode='CW'
+        elif row[11]=="FM":
+            mode='FM'
+        elif row[11]=="DIGI":
+            mode=='DG'
+        else:
+            #Invalid mode, somehow
+            mode=='-1'
+        #date
+        try:
+            dateObj = parser.parse(row[0])
+            date = dateObj.strftime("%Y-%m-%d")
+        except ValueError:
+            print("Invalid date!")
+
+
+        #write data to file
+        self.fVhf.write("QSO: "+band+" "+mode+" "+date+" "+self.callsign)
+        self.fVhf.write(" "+row[1]+" "+row[2]+" "+row[9]+" \n")
+
+    def writeVHFCabrilloHeader(self):
+        self.fVhf.write("START-OF-LOG:3.0\n")
+        self.fVhf.write("CALLSIGN: "+self.callsign+"\n")
+        self.fVhf.write("CONTEST: ARRL-VHF-"+\
+            datetime.now().strftime('%b')+"\n")
+        self.fVhf.write("CATEGORY-ASSISTED: "+\
+            self.config['VHFCABRILLO']['assisted']+"\n")
+        self.fVhf.write("CATEGORY-BAND: ALL\n")
+        self.fVhf.write("CATEGORY-MODE: MIXED\n")
+        self.fVhf.write("CATEGORY-OPERATOR: SINGLE-OP\n")
+        self.fVhf.write("CATEGORY-POWER: QRP\n")
+        self.fVhf.write("CATEGORY-STATION: "+\
+            self.config['VHFCABRILLO']['station']+"\n")
+        self.fVhf.write("CLUB: "+self.config['CABRILLO']['club']+"\n")
+        self.fVhf.write("CREATED-BY: AA6XA-LOGGER v"+version+"\n")
+        self.fVhf.write("EMAIL: "+self.config['CABRILLO']['email']+"\n")
+        self.fVhf.write("GRID-LOCATOR: "+self.config['STATION']['grid']+"\n")
+        self.fVhf.write("LOCATION: "+\
+            self.config['VHFCABRILLO']['section']+"\n")
+        self.fVhf.write("NAME: "+self.config['STATION']['name']+"\n")
+        self.fVhf.write("OPERATORS: "+self.callsign+"\n")
+        self.fVhf.write("SOAPBOX:  \n")
+        self.fVhf.write("\n")
 
     def openLog(self):
         #File open Dialog
@@ -351,5 +458,5 @@ root=Tk()
 app=Window(root)
 version = "0.2"
 root.wm_title("AA6XA Logger, v"+version)
-root.geometry("800x300")
+root.geometry("750x300")
 root.mainloop()

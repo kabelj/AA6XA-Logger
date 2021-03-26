@@ -5,3 +5,21 @@ grid = CM97
 
 [LOGGER]
 defaultpath = '../logger/'
+
+[CABRILLO]
+email = you@email.com
+operator = SINGLE-OP
+power = QRP
+club = 
+station = SINGLE-OP
+
+[VHFCABRILLO]
+assisted = ASSISTED
+section = SCV
+station = PORTABLE
+
+[NAQPCABRILLO]
+assisted = NON-ASSISTED
+mode = CW
+station = FIXED
+section = SCV
