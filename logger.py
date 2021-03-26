@@ -4,6 +4,7 @@ import tkinter.messagebox as md
 import csv
 import configparser
 from datetime import datetime
+from dateutil import parser
 
 class Window(Frame):
     def __init__(self, master=None):
@@ -12,20 +13,21 @@ class Window(Frame):
         self.pack(fill=BOTH, expand=1)
 
         #Read and set defaults
-        config = configparser.ConfigParser()
-        config.read('loggersettings')
-        self.callsign = config['STATION']['callsign']
-        self.myGrid = config['STATION']['grid']
+        self.config = configparser.ConfigParser()
+        self.config.read('loggersettings')
+        self.callsign = self.config['STATION']['callsign']
+        self.myGrid = self.config['STATION']['grid']
+        self.defaultPath = self.config['LOGGER']['defaultpath']
 
         #Add Menus
         menu = Menu(self.master)
         self.master.config(menu=menu)
 
         fileMenu = Menu(menu)
-        fileMenu.add_command(label="Open Log", command=self.openLog)
-        fileMenu.add_command(label="New Log", command=self.newLog)
-        fileMenu.add_command(label="Exit", command=self.clickExitBtn)
-        menu.add_cascade(label="File", menu=fileMenu)
+        fileMenu.add_command(label="Open Log",command=self.openLog)
+        fileMenu.add_command(label="New Log",command=self.newLog)
+        fileMenu.add_command(label="Exit",command=self.clickExitBtn)
+        menu.add_cascade(label="File",menu=fileMenu)
 
         exportMenu = Menu(menu)
         exportMenu.add_command(label="SOTA CSV",command=self.exportSota)
@@ -36,96 +38,106 @@ class Window(Frame):
         #Data Entry Fields
         #Date
         dateTxt = Label(self, text="Date")
-        dateTxt.grid(row=0,column=0)
+        dateTxt.grid(row=0,column=0,sticky="E")
         self.dateEnt = Entry(self,width=10)
         self.dateEnt.grid(row=0,column=1)
         #Time
         timeTxt = Label(self, text="Time (UTC)")
-        timeTxt.grid(row=0,column=2)
+        timeTxt.grid(row=0,column=2,sticky="E")
         self.timeEnt = Entry(self, width=4)
-        self.timeEnt.grid(row=0,column=3)
+        self.timeEnt.grid(row=0,column=3,sticky="W")
         #Callsign
         callTxt = Label(self, text="Callsign")
-        callTxt.grid(row=0,column=4)
+        callTxt.grid(row=0,column=4,sticky='E')
         self.callEnt = Entry(self, width=10)
-        self.callEnt.grid(row=0,column=5)
+        self.callEnt.grid(row=0,column=5,sticky="W")
         #Frequency
-        freqTxt = Label(self, text="Frequency")
-        freqTxt.grid(row=0,column=6)
+        freqTxt = Label(self, text="Freq (MHz)")
+        freqTxt.grid(row=0,column=6,sticky="E")
         self.freqEnt = Entry(self, width=9)
-        self.freqEnt.grid(row=0,column=7)
+        self.freqEnt.grid(row=0,column=7,sticky="W")
         #RST Sent
         rstSentTxt = Label(self, text="RST Sent")
-        rstSentTxt.grid(row=1,column=0)
+        rstSentTxt.grid(row=1,column=0,sticky="E")
         self.rstSentEnt = Entry(self, width=3)
-        self.rstSentEnt.grid(row=1,column=1)
+        self.rstSentEnt.grid(row=1,column=1,sticky="W")
         #RST Received
-        rstRxTxt = Label(self, text="RST Received")
-        rstRxTxt.grid(row=1,column=2)
+        rstRxTxt = Label(self, text="RST Rcv'd")
+        rstRxTxt.grid(row=1,column=2,sticky="E")
         self.rstRxEnt = Entry(self, width=3)
-        self.rstRxEnt.grid(row=1,column=3)
+        self.rstRxEnt.grid(row=1,column=3,sticky="W")
         #Name
         nameTxt = Label(self, text="Name")
-        nameTxt.grid(row=1,column=4)
+        nameTxt.grid(row=1,column=4,sticky="E")
         self.nameEnt = Entry(self, width=10)
-        self.nameEnt.grid(row=1,column=5)
+        self.nameEnt.grid(row=1,column=5,sticky="W")
         #QTH
         qthTxt = Label(self, text="QTH")
-        qthTxt.grid(row=1,column=6)
+        qthTxt.grid(row=1,column=6,sticky="E")
         self.qthEnt = Entry(self, width=10)
-        self.qthEnt.grid(row=1,column=7)
+        self.qthEnt.grid(row=1,column=7,sticky="W")
         #State
         stateTxt = Label(self, text="State")
-        stateTxt.grid(row=2,column=0)
+        stateTxt.grid(row=2,column=0,sticky="E")
         self.stateEnt = Entry(self, width=3)
-        self.stateEnt.grid(row=2, column=1)
+        self.stateEnt.grid(row=2, column=1,sticky="W")
         #Grid
         gridTxt = Label(self, text="Grid")
-        gridTxt.grid(row=2,column=2)
+        gridTxt.grid(row=2,column=2,sticky="E")
         self.gridEnt = Entry(self, width=6)
-        self.gridEnt.grid(row=2,column=3)
+        self.gridEnt.grid(row=2,column=3,sticky="W")
         #Power
         pwrTxt = Label(self, text="Power")
-        pwrTxt.grid(row=2,column=4)
+        pwrTxt.grid(row=2,column=4,sticky="E")
         self.pwrEnt = Entry(self,width=4)
-        self.pwrEnt.grid(row=2,column=5)
+        self.pwrEnt.grid(row=2,column=5,sticky="W")
         #Mode
         modeTxt = Label(self, text="Mode")
-        modeTxt.grid(row=2,column=6)
-        self.modeEnt = Entry(self, width=4)
-        self.modeEnt.insert(0,"CW")
-        self.modeEnt.grid(row=2,column=7)
+        modeTxt.grid(row=2,column=6,sticky="E")
+        #self.modeEnt = Entry(self, width=4)
+        #self.modeEnt.insert(0,"CW")
+        #self.modeEnt.grid(row=2,column=7,sticky="W")
+        choices = {'CW','SSB','FM','DIGI'}
+        self.modeEnt = StringVar(self)
+        self.modeEnt.set('CW')
+        popupMenu = OptionMenu(self, self.modeEnt, *choices)
+        popupMenu.grid(row=2,column=7,sticky="W")
         #SOTA Peak
         sotaTxt = Label(self, text="SOTA Peak")
-        sotaTxt.grid(row=3,column=0)
+        sotaTxt.grid(row=3,column=0,sticky="E")
         self.sotaEnt = Entry(self, width=10)
-        self.sotaEnt.grid(row=3,column=1)
+        self.sotaEnt.grid(row=3,column=1,sticky="W")
         #S2S Peak
         s2sTxt = Label(self, text="S2S Peak")
-        s2sTxt.grid(row=3,column=2)
+        s2sTxt.grid(row=3,column=2,sticky="E")
         self.s2sEnt = Entry(self, width=10)
-        self.s2sEnt.grid(row=3,column=3)
+        self.s2sEnt.grid(row=3,column=3,sticky="W")
         #WWFF Ref
         wwffTxt = Label(self, text="WWFF Ref")
-        wwffTxt.grid(row=3,column=4)
+        wwffTxt.grid(row=3,column=4,sticky="E")
         self.wwffEnt = Entry(self, width=9)
-        self.wwffEnt.grid(row=3,column=5)
+        self.wwffEnt.grid(row=3,column=5,sticky="W")
 
         #log File Name
-        logNameTxt = Label(self, text="Log Filename")
-        logNameTxt.grid(row=7,column=0)
+        logNameTxt = Label(self, text="Log File")
+        logNameTxt.grid(row=7,column=0,sticky="E")
         self.logNameEnt = Entry(self,width=35)
-        self.logNameEnt.grid(row=7,column=1,columnspan=4)
+        self.logNameEnt.grid(row=7,column=1,columnspan=4,sticky="W")
         #SOTA CSV File name
-        sotaNameTxt = Label(self, text="SOTA Filename")
-        sotaNameTxt.grid(row=8,column=0)
+        sotaNameTxt = Label(self, text="SOTA File")
+        sotaNameTxt.grid(row=8,column=0,sticky="E")
         self.sotaNameEnt = Entry(self,width=30)
-        self.sotaNameEnt.grid(row=8,column=1,columnspan=3)
+        self.sotaNameEnt.grid(row=8,column=1,columnspan=3,sticky="W")
         #ADIF Filename
-        adifNameTxt = Label(self, text="ADIF Filename")
-        adifNameTxt.grid(row=8,column=4)
+        adifNameTxt = Label(self, text="ADIF File")
+        adifNameTxt.grid(row=8,column=4,sticky="E")
         self.adifNameEnt = Entry(self,width=30)
-        self.adifNameEnt.grid(row=8,column=5,columnspan=3)
+        self.adifNameEnt.grid(row=8,column=5,columnspan=3,sticky="W")
+        #VHF Filename
+        vhfNameTxt = Label(self, text="Cabrillo File")
+        vhfNameTxt.grid(row=9,column=0,sticky="E")
+        self.vhfNameEnt = Entry(self,width=30)
+        self.vhfNameEnt.grid(row=9,column=1,columnspan=3,sticky="W")
 
         #QSO List
         self.qsoListTxt = Label(self, bg="white",text="test")
@@ -133,17 +145,21 @@ class Window(Frame):
 
         #Log Button
         logBtn = Button(self, text="Log QSO", command=self.logQsoBtn)
-        logBtn.grid(row=7,column=5) #place(x=300,y=200)
+        logBtn.grid(row=7,column=5)
         #Exit Button
         exitBtn = Button(self, text="Exit", command=self.clickExitBtn)
         exitBtn.grid(row=7,column=7)
 
         #Ask for log file
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
-        self.logFile = fd.askopenfilename(initialdir='./',\
+        self.logFile = fd.askopenfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
+        self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
+
+        #Default <enter> to Log QSO
+        master.bind('<Return>',lambda event:self.logQsoBtn())
 
     def clickExitBtn(self):
         exit()
@@ -168,6 +184,25 @@ class Window(Frame):
         sota = self.sotaEnt.get()
         s2s = self.s2sEnt.get()
         wwff = self.wwffEnt.get()
+
+        #Validate stuff
+        try:
+            parser.parse(date)
+        except ValueError:
+            md.showerror("Date Error","Invalid Date!")
+            self.dateEnt.focus_set()
+            return
+        #band=self.freqToBand(freq,False)
+        try:
+            if self.freqToBand(freq,False)==-1:
+                raise ValueError("Oh no! An incorret band was entered!")
+        except ValueError:
+            md.showerror("Frequency Error",\
+                "Invalid Frequency!\n"\
+                "The frequency entered is not in a supported band!")
+            self.freqEnt.focus_set()
+            return
+        #add: time,RST,grid, refs?
 
         #write into a big string
         qso = date+','+time+','+call+','+freq+','+rstS+','+rstR+','+\
@@ -198,8 +233,9 @@ class Window(Frame):
         #open the SOTA CSV file
         if self.sotaNameEnt.get()=='':
             filetypes = (('CSV Files','*.csv'),('All Files','*.*'))
-            fname = fd.asksaveasfilename(initialdir='./',\
+            fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='CSV File Name')
+            self.sotaNameEnt.delete(0,'end')
             self.sotaNameEnt.insert(0,fname)
             fSota = open(fname,'w')
         else:
@@ -221,8 +257,9 @@ class Window(Frame):
         self.logFile = open(self.logNameEnt.get(),'r')
         if self.adifNameEnt.get()=='':
             filetypes = (('ADIF Files','*.adi'),('All Files','*.*'))
-            fname = fd.asksaveasfilename(initialdir='./',\
+            fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='ADIF File Name')
+            self.adifNameEnt.delete(0,'end')
             self.adifNameEnt.insert(0,fname)
             self.fAdif = open(fname,'w')
         else:
@@ -233,8 +270,8 @@ class Window(Frame):
 
         #Read each line, convert to adif form
         reader = csv.reader(self.logFile)
-        rownum = 0
-        adifData = []
+        #rownum = 0
+        #adifData = []
         for row in reader:
             self.writeAdif(row)
 
@@ -242,7 +279,7 @@ class Window(Frame):
         self.logFile.close()
 
     def writeAdif(self, row):
-        band = self.freqToBand(row[3])
+        band = self.freqToBand(row[3],False)
         self.fAdif.write("<operator:"+str(len(self.callsign))+\
             ">"+self.callsign)
         self.fAdif.write("<call:"+str(len(row[2]))+">"+row[2])
@@ -272,75 +309,174 @@ class Window(Frame):
         self.fAdif.write("<PROGRAMVERSION:"+str(len(version))+">"\
             +version+" \n<EOH>\n\n")
 
-    def freqToBand(self, freq):
+    def freqToBand(self, freq, cabrillo):
         #Note: freq is assumed to be a string.
         #To Do: check the type of freq
         mhz = int(float(freq))
         if mhz==1:
             band='160m'
+            cabBand='1800'
         elif mhz==3:
             band='80m'
+            cabBand='3500'
         elif mhz==5:
             band='60m'
+            cabBand='-1'
         elif mhz==7:
             band='40m'
+            cabBand='7000'
         elif mhz==10:
             band='30m'
+            cabBand='-1'
         elif mhz==14:
             band='20m'
+            cabBand='14000'
         elif mhz==18:
             band='17m'
+            cabBand='-1'
         elif mhz==21:
             band='15m'
+            cabBand='21000'
         elif mhz==24:
             band='12m'
+            cabBand='-1'
         elif mhz==28 or mhz==29:
             band='10m'
-        elif mhz>=50 and mhz<=54:
+            cabBand='28000'
+        elif mhz>=50 and mhz<54:
             band='6m'
+            cabBand='50'
         elif mhz>=144 and mhz<=148:
             band='2m'
+            cabBand='144'
         elif mhz>=222 and mhz<=225:
             band='1.25m'
+            cabBand='222'
         elif mhz>=420 and mhz<=450:
             band='70cm'
+            cabBand='432'
         elif mhz>=902 and mhz<=928:
             band='33cm'
+            cabBand='902'
         elif mhz>=1240 and mhz<=1300:
             band='23cm'
+            cabBand='1.2G'
         elif mhz>=10000 and mhz<=10500:
             band='3cm'
+            cabBand='10G'
         elif mhz>=119980 and mhz<=120020:
             band='2.5mm'
+            cabBand='122G'
         else:
-            md.showerror('Not a band',\
-                'Entered frequency is not in a supported band')
+            #md.showerror('Not a band',\
+            #    'Entered frequency is not in a supported band')
             band = -1
-        return band
+            cabBand = -1
+        #return band in the correct format
+        if cabrillo:
+            return cabBand
+        else:
+            return band
 
     def vhfTest(self):
-        print("VHF Contest Log not exported ..... yet")
+        #Open the adif file
+        self.logFile = open(self.logNameEnt.get(),'r')
+        if self.vhfNameEnt.get()=='':
+            filetypes = (('Cabrillo Files','*.cbr'),('All Files','*.*'))
+            fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
+                filetypes=filetypes,title='Cabrillo File Name')
+            self.vhfNameEnt.delete(0,'end')
+            self.vhfNameEnt.insert(0,fname)
+            self.fVhf = open(fname,'w')
+        else:
+            self.fVhf = open(self.adifNameEnt.get(),'w')
+
+        #Write Cabrillo Header
+        self.writeVHFCabrilloHeader()
+
+        #Write QSOs to file
+        reader = csv.reader(self.logFile)
+        for row in reader:
+            self.writeVHFCabrillo(row)
+
+        #Write the last line.
+        self.fVhf.write("END-OF-LOG\n")
+        self.fVhf.close()
+
+    def writeVHFCabrillo(self,row):
+        #convert stuff to cabrillo format
+        #band
+        band = self.freqToBand(row[3],True)
+        #mode
+        if row[11]=="SSB":
+            mode = 'PH'
+        elif row[11]=="CW":
+            mode='CW'
+        elif row[11]=="FM":
+            mode='FM'
+        elif row[11]=="DIGI":
+            mode='DG'
+        else:
+            #Invalid mode, somehow
+            mode=='-1'
+        #date
+        try:
+            dateObj = parser.parse(row[0])
+            date = dateObj.strftime("%Y-%m-%d")
+        except ValueError:
+            print("Invalid date!")
+
+
+        #write data to file
+        self.fVhf.write("QSO: "+band+" "+mode+" "+date+" "+self.callsign)
+        self.fVhf.write(" "+row[1]+" "+row[2]+" "+row[9]+" \n")
+
+    def writeVHFCabrilloHeader(self):
+        self.fVhf.write("START-OF-LOG:3.0\n")
+        self.fVhf.write("CALLSIGN: "+self.callsign+"\n")
+        self.fVhf.write("CONTEST: ARRL-VHF-"+\
+            datetime.now().strftime('%b')+"\n")
+        self.fVhf.write("CATEGORY-ASSISTED: "+\
+            self.config['VHFCABRILLO']['assisted']+"\n")
+        self.fVhf.write("CATEGORY-BAND: ALL\n")
+        self.fVhf.write("CATEGORY-MODE: MIXED\n")
+        self.fVhf.write("CATEGORY-OPERATOR: SINGLE-OP\n")
+        self.fVhf.write("CATEGORY-POWER: QRP\n")
+        self.fVhf.write("CATEGORY-STATION: "+\
+            self.config['VHFCABRILLO']['station']+"\n")
+        self.fVhf.write("CLUB: "+self.config['CABRILLO']['club']+"\n")
+        self.fVhf.write("CREATED-BY: AA6XA-LOGGER v"+version+"\n")
+        self.fVhf.write("EMAIL: "+self.config['CABRILLO']['email']+"\n")
+        self.fVhf.write("GRID-LOCATOR: "+self.config['STATION']['grid']+"\n")
+        self.fVhf.write("LOCATION: "+\
+            self.config['VHFCABRILLO']['section']+"\n")
+        self.fVhf.write("NAME: "+self.config['STATION']['name']+"\n")
+        self.fVhf.write("OPERATORS: "+self.callsign+"\n")
+        self.fVhf.write("SOAPBOX:  \n")
+        self.fVhf.write("\n")
 
     def openLog(self):
         #File open Dialog
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
-        self.logFile = fd.askopenfilename(initialdir='./',\
+        self.logFile = fd.askopenfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='Select Log File')
         #Set edit in gui
+        self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
 
     def newLog(self):
         #File dialog
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
-        self.logFile = fd.asksaveasfilename(initialdir='./',\
+        self.logFile = fd.asksaveasfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='New Log File')
         #Set the text in the gui
+        self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
 
 
 root=Tk()
 app=Window(root)
-version = "0.2"
+version = "0.3"
 root.wm_title("AA6XA Logger, v"+version)
-root.geometry("810x300")
+root.geometry("750x300")
 root.mainloop()
