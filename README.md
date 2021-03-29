@@ -14,8 +14,15 @@ control your transceiver, look elsewhere. This is a simple one.
 
 ## Download and Installation
 You will need Python 3 installed.
-
-If you know how to get files from GitHub, use your regular procedure.
+You also need some Python packages:
+- Tk
+- dateutil
+- datetime
+- csv
+- configparser
+On my Raspberry Pi, all of those were installed already. On my Ubuntu laptop, 
+I had to install Tk and dateutil. A quick search will show you how to install 
+these packages, if you don't know how to.
 
 Linux:
 cd to the directory you want to put the program in, then type
