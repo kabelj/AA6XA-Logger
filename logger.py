@@ -33,6 +33,7 @@ class Window(Frame):
         exportMenu.add_command(label="SOTA CSV",command=self.exportSota)
         exportMenu.add_command(label="WWFF ADIF",command=self.exportWwff)
         exportMenu.add_command(label="VHF Contest",command=self.vhfTest)
+        exportMenu.add_command(label="NAQP Contest",command=self.naqp)
         menu.add_cascade(label="Export", menu=exportMenu)
 
         #Data Entry Fields
@@ -94,9 +95,6 @@ class Window(Frame):
         #Mode
         modeTxt = Label(self, text="Mode")
         modeTxt.grid(row=2,column=6,sticky="E")
-        #self.modeEnt = Entry(self, width=4)
-        #self.modeEnt.insert(0,"CW")
-        #self.modeEnt.grid(row=2,column=7,sticky="W")
         choices = {'CW','SSB','FM','DIGI'}
         self.modeEnt = StringVar(self)
         self.modeEnt.set('CW')
@@ -133,11 +131,11 @@ class Window(Frame):
         adifNameTxt.grid(row=8,column=4,sticky="E")
         self.adifNameEnt = Entry(self,width=30)
         self.adifNameEnt.grid(row=8,column=5,columnspan=3,sticky="W")
-        #VHF Filename
+        #Cabrillo Filename
         vhfNameTxt = Label(self, text="Cabrillo File")
         vhfNameTxt.grid(row=9,column=0,sticky="E")
-        self.vhfNameEnt = Entry(self,width=30)
-        self.vhfNameEnt.grid(row=9,column=1,columnspan=3,sticky="W")
+        self.cabNameEnt = Entry(self,width=30)
+        self.cabNameEnt.grid(row=9,column=1,columnspan=3,sticky="W")
 
         #QSO List
         self.qsoListTxt = Label(self, bg="white",text="test")
@@ -381,18 +379,20 @@ class Window(Frame):
     def vhfTest(self):
         #Open the adif file
         self.logFile = open(self.logNameEnt.get(),'r')
-        if self.vhfNameEnt.get()=='':
+        if self.cabNameEnt.get()=='':
             filetypes = (('Cabrillo Files','*.cbr'),('All Files','*.*'))
             fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='Cabrillo File Name')
-            self.vhfNameEnt.delete(0,'end')
-            self.vhfNameEnt.insert(0,fname)
-            self.fVhf = open(fname,'w')
+            self.cabNameEnt.delete(0,'end')
+            self.cabNameEnt.insert(0,fname)
+            self.fCab = open(fname,'w')
         else:
-            self.fVhf = open(self.adifNameEnt.get(),'w')
+            self.fCab = open(self.adifNameEnt.get(),'w')
 
         #Write Cabrillo Header
-        self.writeVHFCabrilloHeader()
+        self.writeCabrilloHeader(self.config['VHFCABRILLO']['contest'],\
+            self.config['VHFCABRILLO']['assisted'],\
+            self.config['VHFCABRILLO']['station'])
 
         #Write QSOs to file
         reader = csv.reader(self.logFile)
@@ -400,8 +400,8 @@ class Window(Frame):
             self.writeVHFCabrillo(row)
 
         #Write the last line.
-        self.fVhf.write("END-OF-LOG\n")
-        self.fVhf.close()
+        self.fCab.write("END-OF-LOG: \n")
+        self.fCab.close()
 
     def writeVHFCabrillo(self,row):
         #convert stuff to cabrillo format
@@ -428,32 +428,86 @@ class Window(Frame):
 
 
         #write data to file
-        self.fVhf.write("QSO: "+band+" "+mode+" "+date+" "+self.callsign)
-        self.fVhf.write(" "+row[1]+" "+row[2]+" "+row[9]+" \n")
+        self.fCab.write("QSO: "+band+" "+mode+" "+date+" "+self.callsign)
+        self.fCab.write(" "+row[1]+" "+row[2]+" "+row[9]+" \n")
 
-    def writeVHFCabrilloHeader(self):
-        self.fVhf.write("START-OF-LOG:3.0\n")
-        self.fVhf.write("CALLSIGN: "+self.callsign+"\n")
-        self.fVhf.write("CONTEST: ARRL-VHF-"+\
-            datetime.now().strftime('%b')+"\n")
-        self.fVhf.write("CATEGORY-ASSISTED: "+\
-            self.config['VHFCABRILLO']['assisted']+"\n")
-        self.fVhf.write("CATEGORY-BAND: ALL\n")
-        self.fVhf.write("CATEGORY-MODE: MIXED\n")
-        self.fVhf.write("CATEGORY-OPERATOR: SINGLE-OP\n")
-        self.fVhf.write("CATEGORY-POWER: QRP\n")
-        self.fVhf.write("CATEGORY-STATION: "+\
-            self.config['VHFCABRILLO']['station']+"\n")
-        self.fVhf.write("CLUB: "+self.config['CABRILLO']['club']+"\n")
-        self.fVhf.write("CREATED-BY: AA6XA-LOGGER v"+version+"\n")
-        self.fVhf.write("EMAIL: "+self.config['CABRILLO']['email']+"\n")
-        self.fVhf.write("GRID-LOCATOR: "+self.config['STATION']['grid']+"\n")
-        self.fVhf.write("LOCATION: "+\
-            self.config['VHFCABRILLO']['section']+"\n")
-        self.fVhf.write("NAME: "+self.config['STATION']['name']+"\n")
-        self.fVhf.write("OPERATORS: "+self.callsign+"\n")
-        self.fVhf.write("SOAPBOX:  \n")
-        self.fVhf.write("\n")
+    def writeCabrilloHeader(self,contest,assisted,station):
+        self.fCab.write("START-OF-LOG: 3.0\n")
+        self.fCab.write("CALLSIGN: "+self.callsign+"\n")
+        self.fCab.write("CONTEST: "+contest+"\n")
+        self.fCab.write("CATEGORY-ASSISTED: "+assisted+"\n")
+        self.fCab.write("CATEGORY-BAND: ALL\n")
+        self.fCab.write("CATEGORY-MODE: MIXED\n")
+        self.fCab.write("CATEGORY-OPERATOR: SINGLE-OP\n")
+        self.fCab.write("CATEGORY-POWER: QRP\n")
+        self.fCab.write("CATEGORY-STATION: "+station+"\n")
+        self.fCab.write("CATEGORY-TRANSMITTER: ONE\n")
+        self.fCab.write("CLUB: "+self.config['CABRILLO']['club']+"\n")
+        self.fCab.write("CREATED-BY: AA6XA-LOGGER v"+version+"\n")
+        self.fCab.write("GRID-LOCATOR: "+self.config['STATION']['grid']+"\n")
+        self.fCab.write("LOCATION: "+self.config['CABRILLO']['section']+"\n")
+        self.fCab.write("CLAIMED-SCORE: \n")
+        self.fCab.write("NAME: "+self.config['STATION']['name']+"\n")
+        self.fCab.write("EMAIL: "+self.config['CABRILLO']['email']+"\n")
+        self.fCab.write("OPERATORS: "+self.callsign+"\n")
+        self.fCab.write("SOAPBOX:  \n")
+        self.fCab.write("\n")
+
+    def naqp(self):
+        #Open the adif file
+        self.logFile = open(self.logNameEnt.get(),'r')
+        if self.cabNameEnt.get()=='':
+            filetypes = (('Cabrillo Files','*.cbr'),('All Files','*.*'))
+            fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
+                filetypes=filetypes,title='Cabrillo File Name')
+            self.cabNameEnt.delete(0,'end')
+            self.cabNameEnt.insert(0,fname)
+            self.fCab = open(fname,'w')
+        else:
+            self.fCab = open(self.adifNameEnt.get(),'w')
+
+        #Write Cabrillo Header
+        self.writeCabrilloHeader(self.config['NAQPCABRILLO']['contest'],\
+            self.config['NAQPCABRILLO']['assisted'],\
+            self.config['NAQPCABRILLO']['station'])
+
+        #Write QSOs to file
+        reader = csv.reader(self.logFile)
+        for row in reader:
+            self.writeNAQPCabrillo(row)
+
+        #Write the last line.
+        self.fCab.write("END-OF-LOG: \n")
+        self.fCab.close()
+
+    def writeNAQPCabrillo(self):
+        #convert stuff to cabrillo format
+        #band
+        band = self.freqToBand(row[3],True)
+        #mode
+        if row[11]=="SSB":
+            mode = 'PH'
+        elif row[11]=="CW":
+            mode='CW'
+        elif row[11]=="FM":
+            mode='FM'
+        elif row[11]=="DIGI":
+            mode='DG'
+        else:
+            #Invalid mode, somehow
+            mode=='-1'
+        #date
+        try:
+            dateObj = parser.parse(row[0])
+            date = dateObj.strftime("%Y-%m-%d")
+        except ValueError:
+            print("Invalid date!")
+
+        #write data to file
+        self.fCab.write("QSO: "+band+" "+mode+" "+date+" "+row[1])
+        self.fCab.write(" "+self.callsign+" "+self.config['STATION']['name'])
+        self.fCab.write(" "+self.config['NAQPCABRILLO']['state']+" "+row[2])
+        self.fCab.write(" "+row[6]+" "+row[8]+" \n")
 
     def openLog(self):
         #File open Dialog
