@@ -428,8 +428,10 @@ class Window(Frame):
 
 
         #write data to file
-        self.fCab.write("QSO: "+band+" "+mode+" "+date+" "+self.callsign)
-        self.fCab.write(" "+row[1]+" "+row[2]+" "+row[9]+" \n")
+        self.fCab.write("QSO: "+band+" "+mode+" "+date+" "+row[1])
+        self.fCab.write(" "+self.callsign)
+        self.fCab.write(" "+self.config['STATION']['grid']+" "+row[2])
+        self.fCab.write(" "+row[9]+" \n")
 
     def writeCabrilloHeader(self,contest,assisted,station):
         self.fCab.write("START-OF-LOG: 3.0\n")
@@ -470,6 +472,8 @@ class Window(Frame):
         self.writeCabrilloHeader(self.config['NAQPCABRILLO']['contest'],\
             self.config['NAQPCABRILLO']['assisted'],\
             self.config['NAQPCABRILLO']['station'])
+        #This contest needs offtimes, have to manually add them
+        self.fCab.write("OFFTIME: \n")
 
         #Write QSOs to file
         reader = csv.reader(self.logFile)
@@ -489,8 +493,6 @@ class Window(Frame):
             mode = 'PH'
         elif row[11]=="CW":
             mode='CW'
-        elif row[11]=="FM":
-            mode='FM'
         elif row[11]=="DIGI":
             mode='DG'
         else:
