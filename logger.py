@@ -51,6 +51,7 @@ class Window(Frame):
         callTxt = Label(self, text="Callsign")
         callTxt.grid(row=0,column=4,sticky='E')
         self.callEnt = Entry(self, width=10)
+        #self.callEnt.bind("<FocusOut>", self.toCaps())
         self.callEnt.grid(row=0,column=5,sticky="W")
         #Frequency
         freqTxt = Label(self, text="Freq (MHz)")
@@ -158,6 +159,12 @@ class Window(Frame):
 
         #Default <enter> to Log QSO
         master.bind('<Return>',lambda event:self.logQsoBtn())
+        self.callEnt.bind('<FocusOut>', lambda event:self.callToCaps())
+        self.stateEnt.bind("<FocusOut>", lambda event:self.stateToCaps())
+        self.gridEnt.bind("<FocusOut>", lambda event:self.gridToCaps())
+        self.sotaEnt.bind("<FocusOut>", lambda event:self.sotaToCaps())
+        self.s2sEnt.bind("<FocusOut>", lambda event:self.s2sToCaps())
+        self.wwffEnt.bind("<FocusOut>", lambda event:self.wwffToCaps())
 
     def clickExitBtn(self):
         exit()
@@ -528,6 +535,36 @@ class Window(Frame):
         #Set the text in the gui
         self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
+
+    def callToCaps(self):
+        call = self.callEnt.get()
+        self.callEnt.delete(0,'end')
+        self.callEnt.insert(0,call.upper())
+
+    def stateToCaps(self):
+        st = self.stateEnt.get()
+        self.stateEnt.delete(0,'end')
+        self.stateEnt.insert(0,st.upper())
+
+    def gridToCaps(self):
+        grid = self.gridEnt.get()
+        self.gridEnt.delete(0,'end')
+        self.gridEnt.insert(0,grid.upper())
+
+    def sotaToCaps(self):
+        grid = self.sotaEnt.get()
+        self.sotaEnt.delete(0,'end')
+        self.sotaEnt.insert(0,grid.upper())
+
+    def s2sToCaps(self):
+        grid = self.s2sEnt.get()
+        self.s2sEnt.delete(0,'end')
+        self.s2sEnt.insert(0,grid.upper())
+
+    def wwffToCaps(self):
+        grid = self.wwffEnt.get()
+        self.wwffEnt.delete(0,'end')
+        self.wwffEnt.insert(0,grid.upper())
 
 
 root=Tk()
