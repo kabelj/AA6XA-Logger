@@ -21,8 +21,8 @@ You also need some Python packages:
 - csv
 - configparser
 On my Raspberry Pi, all of those were installed already. On my Ubuntu laptop, 
-I had to install Tk and dateutil. A quick search will show you how to install 
-these packages, if you don't know how to.
+I had to install Tk and dateutil. A quick search will show you if you have 
+these packages, or how to install them if you don't know how to.
 
 Linux:
 cd to the directory you want to put the program in, then type
@@ -70,7 +70,6 @@ There are plenty of improvements to add:
 - Show the last few QSOs entered
 - Show those QSOs in a nice format
 - Export cabrillo for NAQP
-- Input checking (valid time, grid, RST, SOTA/WWFF refs, etc)
 - Visual improvements to gui
 - Export cabrillo for other contests, if desired
 
@@ -97,11 +96,13 @@ unless you're really into microwaves. (All HF/VHF/UHF are supported)
 - I haven't looked to closely at how Python's datetime works, so be careful 
 with dates where the month and day can be interchanged, e.g. 3/4/2021
 - VHF Cabrillo Export will allow you to export QSOs on non-contest bands
+- I'm pretty sure I did all the input validation regex's right, so please let
+me know if you find a bug in one.
 
 
 ## History
 When my Macbook, the main computer in my shack, started to die, I replaced it 
-with a raspberry pi. This meant switching to Linux. Overall this was a good 
+with a Raspberry pi. This meant switching to Linux. Overall this was a good 
 experience; however I was not able to find a general purpose logger that I 
 liked. Luckily, there is no law against making my own. I wanted a logger that 
 supported SOTA, WWFF, and other portable operation very well. I am less 

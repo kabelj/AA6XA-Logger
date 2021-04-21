@@ -5,6 +5,7 @@ grid = CM97
 
 [LOGGER]
 defaultpath = '../logger/'
+modes = {'CW','SSB','FM','DIGI'}
 
 [CABRILLO]
 email = you@email.com

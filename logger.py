@@ -5,6 +5,7 @@ import csv
 import configparser
 from datetime import datetime
 from dateutil import parser
+import re
 
 class Window(Frame):
     def __init__(self, master=None):
@@ -47,12 +48,13 @@ class Window(Frame):
         timeTxt.grid(row=0,column=2,sticky="E")
         self.timeEnt = Entry(self, width=4)
         self.timeEnt.grid(row=0,column=3,sticky="W")
+        self.timeEnt.bind("<FocusOut>", lambda event:self.checkTime())
         #Callsign
         callTxt = Label(self, text="Callsign")
         callTxt.grid(row=0,column=4,sticky='E')
         self.callEnt = Entry(self, width=10)
-        #self.callEnt.bind("<FocusOut>", self.toCaps())
         self.callEnt.grid(row=0,column=5,sticky="W")
+        self.callEnt.bind('<FocusOut>', lambda event:self.callToCaps())
         #Frequency
         freqTxt = Label(self, text="Freq (MHz)")
         freqTxt.grid(row=0,column=6,sticky="E")
@@ -63,11 +65,13 @@ class Window(Frame):
         rstSentTxt.grid(row=1,column=0,sticky="E")
         self.rstSentEnt = Entry(self, width=3)
         self.rstSentEnt.grid(row=1,column=1,sticky="W")
+        self.rstSentEnt.bind("<FocusOut>", lambda event:self.rstSCheck())
         #RST Received
         rstRxTxt = Label(self, text="RST Rcv'd")
         rstRxTxt.grid(row=1,column=2,sticky="E")
         self.rstRxEnt = Entry(self, width=3)
         self.rstRxEnt.grid(row=1,column=3,sticky="W")
+        self.rstRxEnt.bind("<FocusOut>", lambda event:self.rstRCheck())
         #Name
         nameTxt = Label(self, text="Name")
         nameTxt.grid(row=1,column=4,sticky="E")
@@ -83,11 +87,13 @@ class Window(Frame):
         stateTxt.grid(row=2,column=0,sticky="E")
         self.stateEnt = Entry(self, width=3)
         self.stateEnt.grid(row=2, column=1,sticky="W")
+        self.stateEnt.bind("<FocusOut>", lambda event:self.stateToCaps())
         #Grid
         gridTxt = Label(self, text="Grid")
         gridTxt.grid(row=2,column=2,sticky="E")
         self.gridEnt = Entry(self, width=6)
         self.gridEnt.grid(row=2,column=3,sticky="W")
+        self.gridEnt.bind("<FocusOut>", lambda event:self.gridToCaps())
         #Power
         pwrTxt = Label(self, text="Power")
         pwrTxt.grid(row=2,column=4,sticky="E")
@@ -106,16 +112,19 @@ class Window(Frame):
         sotaTxt.grid(row=3,column=0,sticky="E")
         self.sotaEnt = Entry(self, width=10)
         self.sotaEnt.grid(row=3,column=1,sticky="W")
+        self.sotaEnt.bind("<FocusOut>", lambda event:self.sotaToCaps())
         #S2S Peak
         s2sTxt = Label(self, text="S2S Peak")
         s2sTxt.grid(row=3,column=2,sticky="E")
         self.s2sEnt = Entry(self, width=10)
         self.s2sEnt.grid(row=3,column=3,sticky="W")
+        self.s2sEnt.bind("<FocusOut>", lambda event:self.s2sToCaps())
         #WWFF Ref
         wwffTxt = Label(self, text="WWFF Ref")
         wwffTxt.grid(row=3,column=4,sticky="E")
         self.wwffEnt = Entry(self, width=9)
         self.wwffEnt.grid(row=3,column=5,sticky="W")
+        self.wwffEnt.bind("<FocusOut>", lambda event:self.wwffToCaps())
 
         #log File Name
         logNameTxt = Label(self, text="Log File")
@@ -159,12 +168,6 @@ class Window(Frame):
 
         #Default <enter> to Log QSO
         master.bind('<Return>',lambda event:self.logQsoBtn())
-        self.callEnt.bind('<FocusOut>', lambda event:self.callToCaps())
-        self.stateEnt.bind("<FocusOut>", lambda event:self.stateToCaps())
-        self.gridEnt.bind("<FocusOut>", lambda event:self.gridToCaps())
-        self.sotaEnt.bind("<FocusOut>", lambda event:self.sotaToCaps())
-        self.s2sEnt.bind("<FocusOut>", lambda event:self.s2sToCaps())
-        self.wwffEnt.bind("<FocusOut>", lambda event:self.wwffToCaps())
 
     def clickExitBtn(self):
         exit()
@@ -536,35 +539,75 @@ class Window(Frame):
         self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
 
+    def checkTime(self):
+        if not re.match(r"^[0-2]\d[0-5]\d$",self.timeEnt.get()):
+            print("Invalid Time!")
+            self.timeEnt.delete(0,'end')
+
     def callToCaps(self):
         call = self.callEnt.get()
         self.callEnt.delete(0,'end')
         self.callEnt.insert(0,call.upper())
 
+    def rstSCheck(self):
+        if not re.match(r"^\d{2,3}$", self.rstSentEnt.get()):
+            print("Invalid RST!")
+            self.rstSentEnt.delete(0,'end')
+
+    def rstRCheck(self):
+        if not re.match(r"^\d{2,3}$", self.rstRxEnt.get()):
+            print("Invalid RST!")
+            self.rstRxEnt.delete(0,'end')
+
     def stateToCaps(self):
         st = self.stateEnt.get()
-        self.stateEnt.delete(0,'end')
-        self.stateEnt.insert(0,st.upper())
+        #check its a valid state
+        if (re.match(r"^[a-zA-Z]{2}$",st)):
+            self.stateEnt.delete(0,'end')
+            self.stateEnt.insert(0,st.upper())
+        else:
+            print("Invalid State!")
+            self.stateEnt.delete(0,'end')
 
     def gridToCaps(self):
         grid = self.gridEnt.get()
-        self.gridEnt.delete(0,'end')
-        self.gridEnt.insert(0,grid.upper())
+        #validate 4 or 6 character grid
+        if re.match(r"^[a-zA-Z]{2}\d{2}([a-zA-Z]{2})?$",grid):
+            self.gridEnt.delete(0,'end')
+            self.gridEnt.insert(0,grid.upper())
+        else:
+            print("Invalid Grid!")
+            self.gridEnt.delete(0,'end')
 
     def sotaToCaps(self):
-        grid = self.sotaEnt.get()
-        self.sotaEnt.delete(0,'end')
-        self.sotaEnt.insert(0,grid.upper())
+        sota = self.sotaEnt.get()
+        #validate summit
+        if re.match(r"^[a-zA-Z0-9]{1,3}/[a-zA-Z]{2}-\d{3}$",sota):
+            self.sotaEnt.delete(0,'end')
+            self.sotaEnt.insert(0,sota.upper())
+        else:
+            print("Invalid SOTA Peak!")
+            self.sotaEnt.delete(0,'end')
 
     def s2sToCaps(self):
-        grid = self.s2sEnt.get()
-        self.s2sEnt.delete(0,'end')
-        self.s2sEnt.insert(0,grid.upper())
+        s2s = self.s2sEnt.get()
+        #validate
+        if re.match(r"^[a-zA-Z0-9]{1,3}/[a-zA-Z]{2}-\d{3}$",s2s):
+            self.s2sEnt.delete(0,'end')
+            self.s2sEnt.insert(0,s2s.upper())
+        else:
+            print("Invalid S2S Peak!")
+            self.s2sEnt.delete(0,'end')
 
     def wwffToCaps(self):
         grid = self.wwffEnt.get()
-        self.wwffEnt.delete(0,'end')
-        self.wwffEnt.insert(0,grid.upper())
+        #validate
+        if re.match(r"^[a-zA-Z0-9]{1,2}(FF|ff)-\d{4}$",grid):
+            self.wwffEnt.delete(0,'end')
+            self.wwffEnt.insert(0,grid.upper())
+        else:
+            print("Invalid WWFF Reference!")
+            self.wwffEnt.delete(0,'end')
 
 
 root=Tk()
