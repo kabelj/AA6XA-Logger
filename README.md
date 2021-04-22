@@ -48,6 +48,10 @@ In the directory with the code there is a file, "loggersettings", which
 contains settings you should only have to set once, or very infrequently. 
 Open this and edit with your information.
 
+It is very important you set your callsign, at the very least. Otherwise, I'll
+get credit for your activation :D
+
+
 On opening the logger, it will prompt you to select a log file. This is 
 either a new or existing one. Enter in the log data, clicking <enter> or 
 "Save QSO" after each one. Selecting Export>"SOTA CSV" or Export>"WWFF ADIF" 
@@ -82,8 +86,8 @@ so don't hold your breath for this type of feature.
 - Other fields people may want
 
 ### Bugs
-If you use this and find a bug, let me know. I'll add it to the list, and I 
-might even fix it!
+If you use this and find a bug, let me know, and I'll add it to the list. I 
+might even fix it for you!
 
 Known Bugs:
 - QSOs are written to the SOTA CSV in the order they're in the log. The SOTA 
@@ -91,20 +95,20 @@ database expects them to be in chronological order. If they're not, you'll
 need to manually cut/paste lines in a text editor to fix this.
 - When starting the program, you can't create a new log. Select an 
 existing one, then File>New Log.
-- Only bands that I use are currently supported. This shouldn't matter 
+- Only bands that I use (or will soon!) are currently supported. This shouldn't matter 
 unless you're really into microwaves. (All HF/VHF/UHF are supported)
 - I haven't looked to closely at how Python's datetime works, so be careful 
 with dates where the month and day can be interchanged, e.g. 3/4/2021
-- VHF Cabrillo Export will allow you to export QSOs on non-contest bands
 - I'm pretty sure I did all the input validation regex's right, so please let
-me know if you find a bug in one.
+me know if you find a bug in one!
 
 
 ## History
 When my Macbook, the main computer in my shack, started to die, I replaced it 
 with a Raspberry pi. This meant switching to Linux. Overall this was a good 
 experience; however I was not able to find a general purpose logger that I 
-liked. Luckily, there is no law against making my own. I wanted a logger that 
+liked. Luckily, there is no law against making my own. In fact, I'd argue it's 
+in the spirit of ham radio to make your own. I wanted a logger that 
 supported SOTA, WWFF, and other portable operation very well. I am less 
 interested in chasing DX awards and stuff like that. This is the result. I 
 hope you enjoy it and find it useful. 

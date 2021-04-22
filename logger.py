@@ -169,6 +169,11 @@ class Window(Frame):
         #Default <enter> to Log QSO
         master.bind('<Return>',lambda event:self.logQsoBtn())
 
+        #Flags
+        self.logFlag = True #Don't log if this is false
+        self.vhfBands = {'50','144','222','432','902','1.2G','10G','122G'}
+        self.hfBands = {'1800','3500','7000','14000','21000','28000'}
+
     def clickExitBtn(self):
         exit()
 
@@ -218,7 +223,8 @@ class Window(Frame):
             sota+','+s2s+','+wwff+'\n'
 
         #write to the log
-        self.logFile.write(qso)
+        if self.logFlag:
+            self.logFile.write(qso)
 
         #update list on screen
         qsoList = ['']*5
@@ -417,6 +423,10 @@ class Window(Frame):
         #convert stuff to cabrillo format
         #band
         band = self.freqToBand(row[3],True)
+        #check the band is valid for VHF
+        if not (band in self.vhfBands):
+            print("Ignoring HF Contact")
+            return
         #mode
         if row[11]=="SSB":
             mode = 'PH'
@@ -498,6 +508,9 @@ class Window(Frame):
         #convert stuff to cabrillo format
         #band
         band = self.freqToBand(row[3],True)
+        if not (band in self.hfBands):
+            print("Ignoring VHF Contact")
+            return
         #mode
         if row[11]=="SSB":
             mode = 'PH'
@@ -540,79 +553,107 @@ class Window(Frame):
         self.logNameEnt.insert(0,self.logFile)
 
     def checkTime(self):
-        if not re.match(r"^[0-2]\d[0-5]\d$",self.timeEnt.get()):
+        #Must be a valid time to continue
+        if not re.match(r"^([01][0-9]|2[0-3])([0-5]\d)$",self.timeEnt.get()):
             print("Invalid Time!")
-            self.timeEnt.delete(0,'end')
+            #self.logFlag = False
+            self.timeEnt.focus_set()
 
     def callToCaps(self):
         call = self.callEnt.get()
         self.callEnt.delete(0,'end')
         self.callEnt.insert(0,call.upper())
+        #Callsign required, don't let them move on until its entered
+        if not call:
+            self.callEnt.focus_set()
 
     def rstSCheck(self):
+        if not self.rstSentEnt.get():
+            return
         if not re.match(r"^\d{2,3}$", self.rstSentEnt.get()):
             print("Invalid RST!")
-            self.rstSentEnt.delete(0,'end')
+            #self.logFlag = False
+            self.rstSentEnt.focus_set()
 
     def rstRCheck(self):
+        if not self.rstRxEnt.get():
+            return
         if not re.match(r"^\d{2,3}$", self.rstRxEnt.get()):
             print("Invalid RST!")
-            self.rstRxEnt.delete(0,'end')
+            #self.logFlag = False
+            self.rstRxEnt.focus_set()
 
     def stateToCaps(self):
         st = self.stateEnt.get()
+        if not st:
+            return
         #check its a valid state
         if (re.match(r"^[a-zA-Z]{2}$",st)):
             self.stateEnt.delete(0,'end')
             self.stateEnt.insert(0,st.upper())
         else:
             print("Invalid State!")
-            self.stateEnt.delete(0,'end')
+            #self.logFlag = False
+            self.stateEnt.focus_set()
 
     def gridToCaps(self):
         grid = self.gridEnt.get()
+        if not grid:
+            return
         #validate 4 or 6 character grid
         if re.match(r"^[a-zA-Z]{2}\d{2}([a-zA-Z]{2})?$",grid):
             self.gridEnt.delete(0,'end')
             self.gridEnt.insert(0,grid.upper())
         else:
             print("Invalid Grid!")
-            self.gridEnt.delete(0,'end')
+            #self.logFlag = False
+            self.gridEnt.focus_set()
 
     def sotaToCaps(self):
         sota = self.sotaEnt.get()
+        if not sota:
+            return
         #validate summit
         if re.match(r"^[a-zA-Z0-9]{1,3}/[a-zA-Z]{2}-\d{3}$",sota):
             self.sotaEnt.delete(0,'end')
             self.sotaEnt.insert(0,sota.upper())
         else:
             print("Invalid SOTA Peak!")
-            self.sotaEnt.delete(0,'end')
+            #self.logFlag = False
+            self.sotaEnt.focus_set()
 
     def s2sToCaps(self):
         s2s = self.s2sEnt.get()
+        if not s2s:
+            return
         #validate
         if re.match(r"^[a-zA-Z0-9]{1,3}/[a-zA-Z]{2}-\d{3}$",s2s):
             self.s2sEnt.delete(0,'end')
             self.s2sEnt.insert(0,s2s.upper())
+            #self.logFlag = True
         else:
             print("Invalid S2S Peak!")
-            self.s2sEnt.delete(0,'end')
+            #self.logFlag = False
+            self.s2sEnt.focus_set()
 
     def wwffToCaps(self):
         grid = self.wwffEnt.get()
+        if not grid:
+            return
         #validate
         if re.match(r"^[a-zA-Z0-9]{1,2}(FF|ff)-\d{4}$",grid):
             self.wwffEnt.delete(0,'end')
             self.wwffEnt.insert(0,grid.upper())
+            #self.logFlag = True
         else:
             print("Invalid WWFF Reference!")
-            self.wwffEnt.delete(0,'end')
+            #self.logFlag = False
+            self.wwffEnt.focus_set()
 
 
 root=Tk()
 app=Window(root)
-version = "0.3"
+version = "0.35"
 root.wm_title("AA6XA Logger, v"+version)
 root.geometry("750x300")
 root.mainloop()
