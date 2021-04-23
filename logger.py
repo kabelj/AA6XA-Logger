@@ -5,6 +5,7 @@ import csv
 import configparser
 from datetime import datetime
 from dateutil import parser
+import re
 
 class Window(Frame):
     def __init__(self, master=None):
@@ -33,6 +34,7 @@ class Window(Frame):
         exportMenu.add_command(label="SOTA CSV",command=self.exportSota)
         exportMenu.add_command(label="WWFF ADIF",command=self.exportWwff)
         exportMenu.add_command(label="VHF Contest",command=self.vhfTest)
+        exportMenu.add_command(label="NAQP Contest",command=self.naqp)
         menu.add_cascade(label="Export", menu=exportMenu)
 
         #Data Entry Fields
@@ -46,11 +48,13 @@ class Window(Frame):
         timeTxt.grid(row=0,column=2,sticky="E")
         self.timeEnt = Entry(self, width=4)
         self.timeEnt.grid(row=0,column=3,sticky="W")
+        self.timeEnt.bind("<FocusOut>", lambda event:self.checkTime())
         #Callsign
         callTxt = Label(self, text="Callsign")
         callTxt.grid(row=0,column=4,sticky='E')
         self.callEnt = Entry(self, width=10)
         self.callEnt.grid(row=0,column=5,sticky="W")
+        self.callEnt.bind('<FocusOut>', lambda event:self.callToCaps())
         #Frequency
         freqTxt = Label(self, text="Freq (MHz)")
         freqTxt.grid(row=0,column=6,sticky="E")
@@ -61,11 +65,13 @@ class Window(Frame):
         rstSentTxt.grid(row=1,column=0,sticky="E")
         self.rstSentEnt = Entry(self, width=3)
         self.rstSentEnt.grid(row=1,column=1,sticky="W")
+        self.rstSentEnt.bind("<FocusOut>", lambda event:self.rstSCheck())
         #RST Received
         rstRxTxt = Label(self, text="RST Rcv'd")
         rstRxTxt.grid(row=1,column=2,sticky="E")
         self.rstRxEnt = Entry(self, width=3)
         self.rstRxEnt.grid(row=1,column=3,sticky="W")
+        self.rstRxEnt.bind("<FocusOut>", lambda event:self.rstRCheck())
         #Name
         nameTxt = Label(self, text="Name")
         nameTxt.grid(row=1,column=4,sticky="E")
@@ -81,11 +87,13 @@ class Window(Frame):
         stateTxt.grid(row=2,column=0,sticky="E")
         self.stateEnt = Entry(self, width=3)
         self.stateEnt.grid(row=2, column=1,sticky="W")
+        self.stateEnt.bind("<FocusOut>", lambda event:self.stateToCaps())
         #Grid
         gridTxt = Label(self, text="Grid")
         gridTxt.grid(row=2,column=2,sticky="E")
         self.gridEnt = Entry(self, width=6)
         self.gridEnt.grid(row=2,column=3,sticky="W")
+        self.gridEnt.bind("<FocusOut>", lambda event:self.gridToCaps())
         #Power
         pwrTxt = Label(self, text="Power")
         pwrTxt.grid(row=2,column=4,sticky="E")
@@ -94,9 +102,6 @@ class Window(Frame):
         #Mode
         modeTxt = Label(self, text="Mode")
         modeTxt.grid(row=2,column=6,sticky="E")
-        #self.modeEnt = Entry(self, width=4)
-        #self.modeEnt.insert(0,"CW")
-        #self.modeEnt.grid(row=2,column=7,sticky="W")
         choices = {'CW','SSB','FM','DIGI'}
         self.modeEnt = StringVar(self)
         self.modeEnt.set('CW')
@@ -107,16 +112,19 @@ class Window(Frame):
         sotaTxt.grid(row=3,column=0,sticky="E")
         self.sotaEnt = Entry(self, width=10)
         self.sotaEnt.grid(row=3,column=1,sticky="W")
+        self.sotaEnt.bind("<FocusOut>", lambda event:self.sotaToCaps())
         #S2S Peak
         s2sTxt = Label(self, text="S2S Peak")
         s2sTxt.grid(row=3,column=2,sticky="E")
         self.s2sEnt = Entry(self, width=10)
         self.s2sEnt.grid(row=3,column=3,sticky="W")
+        self.s2sEnt.bind("<FocusOut>", lambda event:self.s2sToCaps())
         #WWFF Ref
         wwffTxt = Label(self, text="WWFF Ref")
         wwffTxt.grid(row=3,column=4,sticky="E")
         self.wwffEnt = Entry(self, width=9)
         self.wwffEnt.grid(row=3,column=5,sticky="W")
+        self.wwffEnt.bind("<FocusOut>", lambda event:self.wwffToCaps())
 
         #log File Name
         logNameTxt = Label(self, text="Log File")
@@ -133,11 +141,11 @@ class Window(Frame):
         adifNameTxt.grid(row=8,column=4,sticky="E")
         self.adifNameEnt = Entry(self,width=30)
         self.adifNameEnt.grid(row=8,column=5,columnspan=3,sticky="W")
-        #VHF Filename
+        #Cabrillo Filename
         vhfNameTxt = Label(self, text="Cabrillo File")
         vhfNameTxt.grid(row=9,column=0,sticky="E")
-        self.vhfNameEnt = Entry(self,width=30)
-        self.vhfNameEnt.grid(row=9,column=1,columnspan=3,sticky="W")
+        self.cabNameEnt = Entry(self,width=30)
+        self.cabNameEnt.grid(row=9,column=1,columnspan=3,sticky="W")
 
         #QSO List
         self.qsoListTxt = Label(self, bg="white",text="test")
@@ -160,6 +168,11 @@ class Window(Frame):
 
         #Default <enter> to Log QSO
         master.bind('<Return>',lambda event:self.logQsoBtn())
+
+        #Flags
+        self.logFlag = True #Don't log if this is false
+        self.vhfBands = {'50','144','222','432','902','1.2G','10G','122G'}
+        self.hfBands = {'1800','3500','7000','14000','21000','28000'}
 
     def clickExitBtn(self):
         exit()
@@ -210,7 +223,8 @@ class Window(Frame):
             sota+','+s2s+','+wwff+'\n'
 
         #write to the log
-        self.logFile.write(qso)
+        if self.logFlag:
+            self.logFile.write(qso)
 
         #update list on screen
         qsoList = ['']*5
@@ -381,18 +395,20 @@ class Window(Frame):
     def vhfTest(self):
         #Open the adif file
         self.logFile = open(self.logNameEnt.get(),'r')
-        if self.vhfNameEnt.get()=='':
+        if self.cabNameEnt.get()=='':
             filetypes = (('Cabrillo Files','*.cbr'),('All Files','*.*'))
             fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
                 filetypes=filetypes,title='Cabrillo File Name')
-            self.vhfNameEnt.delete(0,'end')
-            self.vhfNameEnt.insert(0,fname)
-            self.fVhf = open(fname,'w')
+            self.cabNameEnt.delete(0,'end')
+            self.cabNameEnt.insert(0,fname)
+            self.fCab = open(fname,'w')
         else:
-            self.fVhf = open(self.adifNameEnt.get(),'w')
+            self.fCab = open(self.adifNameEnt.get(),'w')
 
         #Write Cabrillo Header
-        self.writeVHFCabrilloHeader()
+        self.writeCabrilloHeader(self.config['VHFCABRILLO']['contest'],\
+            self.config['VHFCABRILLO']['assisted'],\
+            self.config['VHFCABRILLO']['station'])
 
         #Write QSOs to file
         reader = csv.reader(self.logFile)
@@ -400,13 +416,17 @@ class Window(Frame):
             self.writeVHFCabrillo(row)
 
         #Write the last line.
-        self.fVhf.write("END-OF-LOG\n")
-        self.fVhf.close()
+        self.fCab.write("END-OF-LOG: \n")
+        self.fCab.close()
 
     def writeVHFCabrillo(self,row):
         #convert stuff to cabrillo format
         #band
         band = self.freqToBand(row[3],True)
+        #check the band is valid for VHF
+        if not (band in self.vhfBands):
+            print("Ignoring HF Contact")
+            return
         #mode
         if row[11]=="SSB":
             mode = 'PH'
@@ -428,32 +448,91 @@ class Window(Frame):
 
 
         #write data to file
-        self.fVhf.write("QSO: "+band+" "+mode+" "+date+" "+self.callsign)
-        self.fVhf.write(" "+row[1]+" "+row[2]+" "+row[9]+" \n")
+        self.fCab.write("QSO: "+band+" "+mode+" "+date+" "+row[1])
+        self.fCab.write(" "+self.callsign)
+        self.fCab.write(" "+self.config['STATION']['grid']+" "+row[2])
+        self.fCab.write(" "+row[9]+" \n")
 
-    def writeVHFCabrilloHeader(self):
-        self.fVhf.write("START-OF-LOG:3.0\n")
-        self.fVhf.write("CALLSIGN: "+self.callsign+"\n")
-        self.fVhf.write("CONTEST: ARRL-VHF-"+\
-            datetime.now().strftime('%b')+"\n")
-        self.fVhf.write("CATEGORY-ASSISTED: "+\
-            self.config['VHFCABRILLO']['assisted']+"\n")
-        self.fVhf.write("CATEGORY-BAND: ALL\n")
-        self.fVhf.write("CATEGORY-MODE: MIXED\n")
-        self.fVhf.write("CATEGORY-OPERATOR: SINGLE-OP\n")
-        self.fVhf.write("CATEGORY-POWER: QRP\n")
-        self.fVhf.write("CATEGORY-STATION: "+\
-            self.config['VHFCABRILLO']['station']+"\n")
-        self.fVhf.write("CLUB: "+self.config['CABRILLO']['club']+"\n")
-        self.fVhf.write("CREATED-BY: AA6XA-LOGGER v"+version+"\n")
-        self.fVhf.write("EMAIL: "+self.config['CABRILLO']['email']+"\n")
-        self.fVhf.write("GRID-LOCATOR: "+self.config['STATION']['grid']+"\n")
-        self.fVhf.write("LOCATION: "+\
-            self.config['VHFCABRILLO']['section']+"\n")
-        self.fVhf.write("NAME: "+self.config['STATION']['name']+"\n")
-        self.fVhf.write("OPERATORS: "+self.callsign+"\n")
-        self.fVhf.write("SOAPBOX:  \n")
-        self.fVhf.write("\n")
+    def writeCabrilloHeader(self,contest,assisted,station):
+        self.fCab.write("START-OF-LOG: 3.0\n")
+        self.fCab.write("CALLSIGN: "+self.callsign+"\n")
+        self.fCab.write("CONTEST: "+contest+"\n")
+        self.fCab.write("CATEGORY-ASSISTED: "+assisted+"\n")
+        self.fCab.write("CATEGORY-BAND: ALL\n")
+        self.fCab.write("CATEGORY-MODE: MIXED\n")
+        self.fCab.write("CATEGORY-OPERATOR: SINGLE-OP\n")
+        self.fCab.write("CATEGORY-POWER: QRP\n")
+        self.fCab.write("CATEGORY-STATION: "+station+"\n")
+        self.fCab.write("CATEGORY-TRANSMITTER: ONE\n")
+        self.fCab.write("CLUB: "+self.config['CABRILLO']['club']+"\n")
+        self.fCab.write("CREATED-BY: AA6XA-LOGGER v"+version+"\n")
+        self.fCab.write("GRID-LOCATOR: "+self.config['STATION']['grid']+"\n")
+        self.fCab.write("LOCATION: "+self.config['CABRILLO']['section']+"\n")
+        self.fCab.write("CLAIMED-SCORE: \n")
+        self.fCab.write("NAME: "+self.config['STATION']['name']+"\n")
+        self.fCab.write("EMAIL: "+self.config['CABRILLO']['email']+"\n")
+        self.fCab.write("OPERATORS: "+self.callsign+"\n")
+        self.fCab.write("SOAPBOX:  \n")
+        self.fCab.write("\n")
+
+    def naqp(self):
+        #Open the adif file
+        self.logFile = open(self.logNameEnt.get(),'r')
+        if self.cabNameEnt.get()=='':
+            filetypes = (('Cabrillo Files','*.cbr'),('All Files','*.*'))
+            fname = fd.asksaveasfilename(initialdir=self.defaultPath,\
+                filetypes=filetypes,title='Cabrillo File Name')
+            self.cabNameEnt.delete(0,'end')
+            self.cabNameEnt.insert(0,fname)
+            self.fCab = open(fname,'w')
+        else:
+            self.fCab = open(self.adifNameEnt.get(),'w')
+
+        #Write Cabrillo Header
+        self.writeCabrilloHeader(self.config['NAQPCABRILLO']['contest'],\
+            self.config['NAQPCABRILLO']['assisted'],\
+            self.config['NAQPCABRILLO']['station'])
+        #This contest needs offtimes, have to manually add them
+        self.fCab.write("OFFTIME: \n")
+
+        #Write QSOs to file
+        reader = csv.reader(self.logFile)
+        for row in reader:
+            self.writeNAQPCabrillo(row)
+
+        #Write the last line.
+        self.fCab.write("END-OF-LOG: \n")
+        self.fCab.close()
+
+    def writeNAQPCabrillo(self):
+        #convert stuff to cabrillo format
+        #band
+        band = self.freqToBand(row[3],True)
+        if not (band in self.hfBands):
+            print("Ignoring VHF Contact")
+            return
+        #mode
+        if row[11]=="SSB":
+            mode = 'PH'
+        elif row[11]=="CW":
+            mode='CW'
+        elif row[11]=="DIGI":
+            mode='DG'
+        else:
+            #Invalid mode, somehow
+            mode=='-1'
+        #date
+        try:
+            dateObj = parser.parse(row[0])
+            date = dateObj.strftime("%Y-%m-%d")
+        except ValueError:
+            print("Invalid date!")
+
+        #write data to file
+        self.fCab.write("QSO: "+band+" "+mode+" "+date+" "+row[1])
+        self.fCab.write(" "+self.callsign+" "+self.config['STATION']['name'])
+        self.fCab.write(" "+self.config['NAQPCABRILLO']['state']+" "+row[2])
+        self.fCab.write(" "+row[6]+" "+row[8]+" \n")
 
     def openLog(self):
         #File open Dialog
@@ -473,10 +552,108 @@ class Window(Frame):
         self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
 
+    def checkTime(self):
+        #Must be a valid time to continue
+        if not re.match(r"^([01][0-9]|2[0-3])([0-5]\d)$",self.timeEnt.get()):
+            print("Invalid Time!")
+            #self.logFlag = False
+            self.timeEnt.focus_set()
+
+    def callToCaps(self):
+        call = self.callEnt.get()
+        self.callEnt.delete(0,'end')
+        self.callEnt.insert(0,call.upper())
+        #Callsign required, don't let them move on until its entered
+        if not call:
+            self.callEnt.focus_set()
+
+    def rstSCheck(self):
+        if not self.rstSentEnt.get():
+            return
+        if not re.match(r"^\d{2,3}$", self.rstSentEnt.get()):
+            print("Invalid RST!")
+            #self.logFlag = False
+            self.rstSentEnt.focus_set()
+
+    def rstRCheck(self):
+        if not self.rstRxEnt.get():
+            return
+        if not re.match(r"^\d{2,3}$", self.rstRxEnt.get()):
+            print("Invalid RST!")
+            #self.logFlag = False
+            self.rstRxEnt.focus_set()
+
+    def stateToCaps(self):
+        st = self.stateEnt.get()
+        if not st:
+            return
+        #check its a valid state
+        if (re.match(r"^[a-zA-Z]{2}$",st)):
+            self.stateEnt.delete(0,'end')
+            self.stateEnt.insert(0,st.upper())
+        else:
+            print("Invalid State!")
+            #self.logFlag = False
+            self.stateEnt.focus_set()
+
+    def gridToCaps(self):
+        grid = self.gridEnt.get()
+        if not grid:
+            return
+        #validate 4 or 6 character grid
+        if re.match(r"^[a-zA-Z]{2}\d{2}([a-zA-Z]{2})?$",grid):
+            self.gridEnt.delete(0,'end')
+            self.gridEnt.insert(0,grid.upper())
+        else:
+            print("Invalid Grid!")
+            #self.logFlag = False
+            self.gridEnt.focus_set()
+
+    def sotaToCaps(self):
+        sota = self.sotaEnt.get()
+        if not sota:
+            return
+        #validate summit
+        if re.match(r"^[a-zA-Z0-9]{1,3}/[a-zA-Z]{2}-\d{3}$",sota):
+            self.sotaEnt.delete(0,'end')
+            self.sotaEnt.insert(0,sota.upper())
+        else:
+            print("Invalid SOTA Peak!")
+            #self.logFlag = False
+            self.sotaEnt.focus_set()
+
+    def s2sToCaps(self):
+        s2s = self.s2sEnt.get()
+        if not s2s:
+            return
+        #validate
+        if re.match(r"^[a-zA-Z0-9]{1,3}/[a-zA-Z]{2}-\d{3}$",s2s):
+            self.s2sEnt.delete(0,'end')
+            self.s2sEnt.insert(0,s2s.upper())
+            #self.logFlag = True
+        else:
+            print("Invalid S2S Peak!")
+            #self.logFlag = False
+            self.s2sEnt.focus_set()
+
+    def wwffToCaps(self):
+        grid = self.wwffEnt.get()
+        if not grid:
+            return
+        #validate
+        if re.match(r"^[a-zA-Z0-9]{1,2}(FF|ff)-\d{4}$",grid):
+            self.wwffEnt.delete(0,'end')
+            self.wwffEnt.insert(0,grid.upper())
+            #self.logFlag = True
+        else:
+            print("Invalid WWFF Reference!")
+            #self.logFlag = False
+            self.wwffEnt.focus_set()
+
 
 root=Tk()
 app=Window(root)
-version = "0.3"
+version = "0.35"
 root.wm_title("AA6XA Logger, v"+version)
 root.geometry("750x300")
 root.mainloop()
