@@ -68,6 +68,7 @@ Remember:
 - New log file for each activation
 - Limited data validation (currently)
 - No editing QSOs in the program. Use a text editor to fix
+- The first time you use the logger, edit the loggersettings to your information
 
 ## Features not yet added
 There are plenty of improvements to add:
