@@ -6,6 +6,7 @@ import configparser
 from datetime import datetime
 from dateutil import parser
 import re
+import glob
 
 class Window(Frame):
     def __init__(self, master=None):
@@ -39,7 +40,7 @@ class Window(Frame):
 
         #Data Entry Fields
         #Date
-        dateTxt = Label(self, text="Date")
+        dateTxt = Label(self, text="Date (D/M/Y)")
         dateTxt.grid(row=0,column=0,sticky="E")
         self.dateEnt = Entry(self,width=10)
         self.dateEnt.grid(row=0,column=1)
@@ -148,7 +149,7 @@ class Window(Frame):
         self.cabNameEnt.grid(row=9,column=1,columnspan=3,sticky="W")
 
         #QSO List
-        self.qsoListTxt = Label(self, bg="white",text="test")
+        self.qsoListTxt = Label(self, bg="white",text="No entries yet")
         self.qsoListTxt.grid(row=10,column=0,columnspan=8,rowspan=3)
 
         #Log Button
@@ -158,10 +159,21 @@ class Window(Frame):
         exitBtn = Button(self, text="Exit", command=self.clickExitBtn)
         exitBtn.grid(row=7,column=7)
 
+        #check if there are other .log files. If not, prompt dialog to
+        # update loggersettings
+        numLogFiles = len(glob.glob1('./', '*.log'))
+        if numLogFiles == 1 or numLogFiles == 0:
+            md.showwarning(title="Edit Settings",\
+                message="Be sure to edit the loggersettings file!")
+
         #Ask for log file
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
         self.logFile = fd.askopenfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='Select Log File')
+        if not self.logFile:
+            self.logFile = fd.asksaveasfilename(\
+                initialdir=self.defaultPath,\
+                filetypes=filetypes,title='New Log File')
         #Set edit in gui
         self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
@@ -200,7 +212,7 @@ class Window(Frame):
 
         #Validate stuff
         try:
-            parser.parse(date)
+            parser.parse(date,dayfirst=True)
         except ValueError:
             md.showerror("Date Error","Invalid Date!")
             self.dateEnt.focus_set()
@@ -553,6 +565,8 @@ class Window(Frame):
         self.logNameEnt.insert(0,self.logFile)
 
     def checkTime(self):
+        if not self.timeEnt.get():
+            return
         #Must be a valid time to continue
         if not re.match(r"^([01][0-9]|2[0-3])([0-5]\d)$",self.timeEnt.get()):
             print("Invalid Time!")
@@ -653,7 +667,7 @@ class Window(Frame):
 
 root=Tk()
 app=Window(root)
-version = "0.35"
+version = "0.36"
 root.wm_title("AA6XA Logger, v"+version)
 root.geometry("750x300")
 root.mainloop()

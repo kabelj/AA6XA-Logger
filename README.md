@@ -52,9 +52,11 @@ It is very important you set your callsign, at the very least. Otherwise, I'll
 get credit for your activation :D
 
 
-On opening the logger, it will prompt you to select a log file. This is 
-either a new or existing one. Enter in the log data, clicking <enter> or 
-"Save QSO" after each one. Selecting Export>"SOTA CSV" or Export>"WWFF ADIF" 
+On opening the logger, it will prompt you to select a log file. Select an 
+existing log file. If you wish to create a new file, click "cancel" and 
+another dialog will appear to allow you to create a new log. Enter in the 
+log data, clicking <enter> or "Save QSO" after each one. Selecting 
+Export>"SOTA CSV" or Export>"WWFF ADIF" 
 will prompt you to choose the name of the file, then write the QSOs in the 
 appropriate format. Exporting one of the contests will behave similarly.
 Currently, you need to give it a new log file name for each activation. It is
@@ -74,7 +76,6 @@ Remember:
 There are plenty of improvements to add:
 - Show the last few QSOs entered
 - Show those QSOs in a nice format
-- Export cabrillo for NAQP
 - Visual improvements to gui
 - Export cabrillo for other contests, if desired
 
@@ -94,14 +95,12 @@ Known Bugs:
 - QSOs are written to the SOTA CSV in the order they're in the log. The SOTA 
 database expects them to be in chronological order. If they're not, you'll 
 need to manually cut/paste lines in a text editor to fix this.
-- When starting the program, you can't create a new log. Select an 
-existing one, then File>New Log.
-- Only bands that I use (or will soon!) are currently supported. This shouldn't matter 
-unless you're really into microwaves. (All HF/VHF/UHF are supported)
+- Only bands that I use (or will soon!) are currently supported. This shouldn't 
+matter unless you're really into microwaves. (All HF/VHF/UHF are supported)
 - I haven't looked to closely at how Python's datetime works, so be careful 
 with dates where the month and day can be interchanged, e.g. 3/4/2021
-- I'm pretty sure I did all the input validation regex's right, so please let
-me know if you find a bug in one!
+- I'm pretty sure I did all the input validation regex's right, so please 
+let me know if you find a bug in one!
 
 
 ## History
