@@ -179,9 +179,23 @@ class Window(Frame):
             logReader = csv.reader(f)
             for row in logReader:
                 self.rowCount += 1
-            #print(self.rowCount)
             f.close()
-            print("Open File row count = ",self.rowCount)
+            #print("Open File row count = ",self.rowCount)
+
+            #update list on screen
+            qsoText = ''
+            lineNums = [self.rowCount-5, self.rowCount-4, self.rowCount-3, \
+                self.rowCount-2, self.rowCount-1]
+            logFile = open(self.logFile,'r')
+            logReader = csv.reader(logFile)
+            count = -1
+            for row in logReader:
+                count += 1
+                if count in lineNums:
+                    text = ', '.join(row)
+                    qsoText = qsoText+text+'\n'
+            self.qsoListTxt.configure(text=qsoText)
+            logFile.close()
         except TypeError:
             pass
         except Exception as e:
@@ -263,19 +277,14 @@ class Window(Frame):
         qsoText = ''
         lineNums = [self.rowCount-5, self.rowCount-4, self.rowCount-3, \
             self.rowCount-2, self.rowCount-1]
-        print('Log QSO Btn rowCount =',self.rowCount)
-        print(lineNums)
         self.logFile = open(self.logNameEnt.get(),'r')
         logReader = csv.reader(self.logFile)
         count = -1
         for row in logReader:
             count += 1
-            print(count)
             if count in lineNums:
                 text = ', '.join(row)
-                #print(text)
                 qsoText = qsoText+text+'\n'
-                #print(qsoText)
         self.qsoListTxt.configure(text=qsoText)
         self.logFile.close()
 
@@ -550,7 +559,7 @@ class Window(Frame):
         self.fCab.write("END-OF-LOG: \n")
         self.fCab.close()
 
-    def writeNAQPCabrillo(self):
+    def writeNAQPCabrillo(self, row):
         #convert stuff to cabrillo format
         #band
         band = self.freqToBand(row[3],True)
@@ -595,8 +604,22 @@ class Window(Frame):
         logReader = csv.reader(self.logFile)
         for row in logReader:
             self.rowCount += 1
-        #print(self.rowCount)
         self.logFile.close()
+
+        #update list on screen
+        qsoText = ''
+        lineNums = [self.rowCount-5, self.rowCount-4, self.rowCount-3, \
+            self.rowCount-2, self.rowCount-1]
+        f = open(self.logNameEnt.get(),'r')
+        logReader = csv.reader(f)
+        count = -1
+        for row in logReader:
+            count += 1
+            if count in lineNums:
+                text = ', '.join(row)
+                qsoText = qsoText+text+'\n'
+        self.qsoListTxt.configure(text=qsoText)
+        f.close()
 
     def newLog(self):
         #File dialog
@@ -710,7 +733,7 @@ class Window(Frame):
 
 root=Tk()
 app=Window(root)
-version = "0.36"
+version = "0.40"
 root.wm_title("AA6XA Logger, v"+version)
 root.geometry("750x300")
 root.mainloop()
