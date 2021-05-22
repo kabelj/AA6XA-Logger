@@ -20,6 +20,8 @@ class Window(Frame):
         self.callsign = self.config['STATION']['callsign']
         self.myGrid = self.config['STATION']['grid']
         self.defaultPath = self.config['LOGGER']['defaultpath']
+        self.rowCount = 0
+
 
         #Add Menus
         menu = Menu(self.master)
@@ -170,10 +172,27 @@ class Window(Frame):
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
         self.logFile = fd.askopenfilename(initialdir=self.defaultPath,\
             filetypes=filetypes,title='Select Log File')
+        try:
+            #count number of lines
+            self.rowCount = 0
+            f = open(self.logFile,'r')
+            logReader = csv.reader(f)
+            for row in logReader:
+                self.rowCount += 1
+            #print(self.rowCount)
+            f.close()
+            print("Open File row count = ",self.rowCount)
+        except TypeError:
+            pass
+        except Exception as e:
+            print(e)
+            print("Oh no! What have you done?")
+
         if not self.logFile:
             self.logFile = fd.asksaveasfilename(\
                 initialdir=self.defaultPath,\
                 filetypes=filetypes,title='New Log File')
+            self.rowCount = 0
         #Set edit in gui
         self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
@@ -237,12 +256,28 @@ class Window(Frame):
         #write to the log
         if self.logFlag:
             self.logFile.write(qso)
+        self.logFile.close()
 
         #update list on screen
-        qsoList = ['']*5
-        for i in range(0,4):
-            qsoList[i] = self.logFile.readline()
-        self.qsoListTxt.configure(text=qso)
+        self.rowCount += 1
+        qsoText = ''
+        lineNums = [self.rowCount-5, self.rowCount-4, self.rowCount-3, \
+            self.rowCount-2, self.rowCount-1]
+        print('Log QSO Btn rowCount =',self.rowCount)
+        print(lineNums)
+        self.logFile = open(self.logNameEnt.get(),'r')
+        logReader = csv.reader(self.logFile)
+        count = -1
+        for row in logReader:
+            count += 1
+            print(count)
+            if count in lineNums:
+                text = ', '.join(row)
+                #print(text)
+                qsoText = qsoText+text+'\n'
+                #print(qsoText)
+        self.qsoListTxt.configure(text=qsoText)
+        self.logFile.close()
 
         #clear fields
         self.timeEnt.delete(0,'end')
@@ -253,7 +288,6 @@ class Window(Frame):
         self.gridEnt.delete(0,'end')
         self.s2sEnt.delete(0,'end')
         self.timeEnt.focus_set()
-        self.logFile.close()
 
     def exportSota(self):
         #open the SOTA CSV file
@@ -555,6 +589,15 @@ class Window(Frame):
         self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
 
+        #count number of lines
+        self.rowCount = 0
+        self.logFile = open(self.logNameEnt.get(),'r')
+        logReader = csv.reader(self.logFile)
+        for row in logReader:
+            self.rowCount += 1
+        #print(self.rowCount)
+        self.logFile.close()
+
     def newLog(self):
         #File dialog
         filetypes = (('Log Files','*.log'),('All Files','*.*'))
@@ -570,8 +613,8 @@ class Window(Frame):
         #Must be a valid time to continue
         if not re.match(r"^([01][0-9]|2[0-3])([0-5]\d)$",self.timeEnt.get()):
             print("Invalid Time!")
-            #self.logFlag = False
-            self.timeEnt.focus_set()
+            self.logFlag = False
+            #self.timeEnt.focus_set()
 
     def callToCaps(self):
         call = self.callEnt.get()
