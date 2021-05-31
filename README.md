@@ -43,7 +43,8 @@ directory, and run the command `python3 logger.py`
 Windows:
 Follow the Linux instructions if you have Git installed. Otherwise follow 
 the Mac instructions. I don't have a Windows computer, so I can't test that 
-everything works there, or even if these steps are accurate.
+everything works there, or even if these steps are accurate. Your system may
+have a different method of calling python.
 
 
 

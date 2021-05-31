@@ -111,7 +111,7 @@ class Window(Frame):
         popupMenu = OptionMenu(self, self.modeEnt, *choices)
         popupMenu.grid(row=2,column=7,sticky="W")
         #SOTA Peak
-        sotaTxt = Label(self, text="SOTA Peak")
+        sotaTxt = Label(self, text="My SOTA Peak")
         sotaTxt.grid(row=3,column=0,sticky="E")
         self.sotaEnt = Entry(self, width=10)
         self.sotaEnt.grid(row=3,column=1,sticky="W")
@@ -155,8 +155,8 @@ class Window(Frame):
         self.qsoListTxt.grid(row=10,column=0,columnspan=8,rowspan=3)
 
         #Log Button
-        logBtn = Button(self, text="Log QSO", command=self.logQsoBtn)
-        logBtn.grid(row=7,column=5)
+        self.logBtn = Button(self, text="Log QSO", command=self.logQsoBtn)
+        self.logBtn.grid(row=7,column=5)
         #Exit Button
         exitBtn = Button(self, text="Exit", command=self.clickExitBtn)
         exitBtn.grid(row=7,column=7)
@@ -223,6 +223,12 @@ class Window(Frame):
         exit()
 
     def logQsoBtn(self):
+        #self.timeEnt.focus_set()
+        #double check stuff is capitalized
+        self.sotaToCaps()
+        self.s2sToCaps()
+        self.wwffToCaps()
+
         #open log file
         self.logFile = open(self.logNameEnt.get(),'a+')
 
@@ -308,18 +314,21 @@ class Window(Frame):
             self.sotaNameEnt.insert(0,fname)
             fSota = open(fname,'w')
         else:
-            fSota = open(self.sotaNameEnt.get(),'w')
+            #fSota = open(self.sotaNameEnt.get(),'w')
+            pass
         self.logFile = open(self.logNameEnt.get(),'r')
 
         #Read each line in the log, write corresponding line to CSV
         reader = csv.reader(self.logFile)
-        writer = csv.writer(fSota)
+        #writer = csv.writer(fSota, newline='')
 
-        for row in reader:
-            writer.writerow(['V2',self.callsign,row[12],row[0],row[1],\
-                row[3],row[11],row[2],row[13]])
+        with open(self.sotaNameEnt.get(), 'w', newline='') as fSota:
+            writer = csv.writer(fSota)
+            for row in reader:
+                writer.writerow(['V2',self.callsign,row[12],row[0],row[1],\
+                    row[3],row[11],row[2],row[13]])
 
-        fSota.close()
+        #fSota.close()
 
     def exportWwff(self):
         #Open the adif file
