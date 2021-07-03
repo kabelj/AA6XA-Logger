@@ -123,7 +123,7 @@ class Window(Frame):
         self.s2sEnt.grid(row=3,column=3,sticky="W")
         self.s2sEnt.bind("<FocusOut>", lambda event:self.s2sToCaps())
         #WWFF Ref
-        wwffTxt = Label(self, text="WWFF Ref")
+        wwffTxt = Label(self, text="Park Ref")
         wwffTxt.grid(row=3,column=4,sticky="E")
         self.wwffEnt = Entry(self, width=9)
         self.wwffEnt.grid(row=3,column=5,sticky="W")
@@ -370,6 +370,7 @@ class Window(Frame):
         self.fAdif.write("<mode:"+str(len(row[11]))+">"+row[11])
         self.fAdif.write("<rst_sent:"+str(len(row[4]))+">"+row[4])
         self.fAdif.write("<rst_rcvd:"+str(len(row[5]))+">"+row[5])
+        self.fAdif.write("<name:"+str(len(row[6]))+">"+row[6])
         self.fAdif.write("<state:"+str(len(row[8]))+">"+row[8])
         self.fAdif.write("<qth:"+str(len(row[7]))+">"+row[7])
         self.fAdif.write("<tx_pwr:"+str(len(row[10]))+">"+row[10])

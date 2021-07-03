@@ -84,6 +84,24 @@ Remember:
 - The first time you use the logger, edit the loggersettings to your 
 information
 
+### Exports
+For the SOTA CSV export, the following fields are used:
+- Date
+- Time
+- Callsign
+- Frequency
+- Mode
+- My SOTA Peak
+- S2S Peak
+
+For the Parks export, which is just an ADIF files, all of the fields are 
+written to the file. "Date" is used for both the <qso_date> and 
+<qso_date_off> fields. "Time" is used for both <time_on> and <time_off>. The 
+frequency is written to the appropriate field, and the program automatically 
+determines the band from it. "Park Ref" is written to <my_sig_info>. The 
+<operator> field is taken from the settings file.
+
+
 ## Features not yet added
 There are plenty of improvements to add:
 - Show the last few QSOs in a nice format
