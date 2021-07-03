@@ -73,7 +73,8 @@ validation. Anything you add to these fields will be accepted and written to
 log without any complaints or warnings. Also note that the SOTA checking is 
 set up to accept summits from anywhere in the world, but it doesn't have a 
 list of valid associations and regions. Anything that could be correct won't 
-be caught by the checker, e.g. W6W/AA-123 would not be caught. Similarly for WWFF/POTA. Be careful! 
+be caught by the checker, e.g. W6W/AA-123 would not be caught. Similarly for 
+WWFF/POTA. Be careful! 
 If you do make a mistake, just open the .log file with your favorite text 
 editor and fix your typo.
 
@@ -93,6 +94,7 @@ For the SOTA CSV export, the following fields are used:
 - Mode
 - My SOTA Peak
 - S2S Peak
+The operator's callsign is taken from the settings file.
 
 For the Parks export, which is just an ADIF files, all of the fields are 
 written to the file. "Date" is used for both the <qso_date> and 
