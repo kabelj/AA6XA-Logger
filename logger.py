@@ -743,7 +743,7 @@ class Window(Frame):
 
 root=Tk()
 app=Window(root)
-version = "0.40"
+version = "0.41"
 root.wm_title("AA6XA Logger, v"+version)
 root.geometry("750x300")
 root.mainloop()
