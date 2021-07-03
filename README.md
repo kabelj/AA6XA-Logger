@@ -43,7 +43,8 @@ directory, and run the command `python3 logger.py`
 Windows:
 Follow the Linux instructions if you have Git installed. Otherwise follow 
 the Mac instructions. I don't have a Windows computer, so I can't test that 
-everything works there, or even if these steps are accurate.
+everything works there, or even if these steps are accurate. Your system may
+have a different method of calling python.
 
 
 
@@ -72,7 +73,8 @@ validation. Anything you add to these fields will be accepted and written to
 log without any complaints or warnings. Also note that the SOTA checking is 
 set up to accept summits from anywhere in the world, but it doesn't have a 
 list of valid associations and regions. Anything that could be correct won't 
-be caught by the checker, e.g. W6W/AA-123 would not be caught. Similarly for WWFF/POTA. Be careful! 
+be caught by the checker, e.g. W6W/AA-123 would not be caught. Similarly for 
+WWFF/POTA. Be careful! 
 If you do make a mistake, just open the .log file with your favorite text 
 editor and fix your typo.
 
@@ -82,6 +84,26 @@ Remember:
 - No editing QSOs in the program. Use a text editor to fix
 - The first time you use the logger, edit the loggersettings to your 
 information
+
+### Exports
+For the SOTA CSV export, the following fields are used:
+- Date
+- Time
+- Callsign
+- Frequency
+- Mode
+- My SOTA Peak
+- S2S Peak
+
+The operator's callsign is taken from the settings file.
+
+For the Parks export, which is just an ADIF files, all of the fields are 
+written to the file. "Date" is used for both the <qso_date> and 
+<qso_date_off> fields. "Time" is used for both <time_on> and <time_off>. The 
+frequency is written to the appropriate field, and the program automatically 
+determines the band from it. "Park Ref" is written to <my_sig_info>. The 
+"operator" field is taken from the settings file.
+
 
 ## Features not yet added
 There are plenty of improvements to add:
@@ -98,6 +120,7 @@ so don't hold your breath for this type of feature. Also, I'd need to learn
 how to do databases.
 - Export only certain QSOs for a given export
 - Other fields people may want
+- Support for other On The Air activities
 
 ### Bugs
 If you use this and find a bug, let me know, and I'll add it to the list. I 
@@ -114,6 +137,11 @@ with dates where the month and day can be interchanged, e.g. 3/4/2021. I
 added a note to the GUI to remind you the best format.
 - I'm pretty sure I did all the input validation regex's right, so please 
 let me know if you find a bug in one!
+- I've had reports that on Windows the file extensions are not added. It 
+appears the files are still written in the format they should, and can be 
+opened with a text editor.
+I'm having trouble reproducing this, since I don't own a Windows computer.
+- Anything listed in the "Issues" section on GitHub.
 
 
 ## History
@@ -126,3 +154,5 @@ supported SOTA, WWFF, and other portable operation very well. It also needed
 to support the contests that I like to do from summits. I am less 
 interested in chasing DX awards and stuff like that. This is the result. I 
 hope you enjoy it and find it useful. 
+
+Now that you've made it this far, go out and have some fun!

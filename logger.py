@@ -111,7 +111,7 @@ class Window(Frame):
         popupMenu = OptionMenu(self, self.modeEnt, *choices)
         popupMenu.grid(row=2,column=7,sticky="W")
         #SOTA Peak
-        sotaTxt = Label(self, text="SOTA Peak")
+        sotaTxt = Label(self, text="My SOTA Peak")
         sotaTxt.grid(row=3,column=0,sticky="E")
         self.sotaEnt = Entry(self, width=10)
         self.sotaEnt.grid(row=3,column=1,sticky="W")
@@ -123,7 +123,7 @@ class Window(Frame):
         self.s2sEnt.grid(row=3,column=3,sticky="W")
         self.s2sEnt.bind("<FocusOut>", lambda event:self.s2sToCaps())
         #WWFF Ref
-        wwffTxt = Label(self, text="WWFF Ref")
+        wwffTxt = Label(self, text="Park Ref")
         wwffTxt.grid(row=3,column=4,sticky="E")
         self.wwffEnt = Entry(self, width=9)
         self.wwffEnt.grid(row=3,column=5,sticky="W")
@@ -155,8 +155,8 @@ class Window(Frame):
         self.qsoListTxt.grid(row=10,column=0,columnspan=8,rowspan=3)
 
         #Log Button
-        logBtn = Button(self, text="Log QSO", command=self.logQsoBtn)
-        logBtn.grid(row=7,column=5)
+        self.logBtn = Button(self, text="Log QSO", command=self.logQsoBtn)
+        self.logBtn.grid(row=7,column=5)
         #Exit Button
         exitBtn = Button(self, text="Exit", command=self.clickExitBtn)
         exitBtn.grid(row=7,column=7)
@@ -223,6 +223,12 @@ class Window(Frame):
         exit()
 
     def logQsoBtn(self):
+        #self.timeEnt.focus_set()
+        #double check stuff is capitalized
+        self.sotaToCaps()
+        self.s2sToCaps()
+        self.wwffToCaps()
+
         #open log file
         self.logFile = open(self.logNameEnt.get(),'a+')
 
@@ -308,18 +314,21 @@ class Window(Frame):
             self.sotaNameEnt.insert(0,fname)
             fSota = open(fname,'w')
         else:
-            fSota = open(self.sotaNameEnt.get(),'w')
+            #fSota = open(self.sotaNameEnt.get(),'w')
+            pass
         self.logFile = open(self.logNameEnt.get(),'r')
 
         #Read each line in the log, write corresponding line to CSV
         reader = csv.reader(self.logFile)
-        writer = csv.writer(fSota)
+        #writer = csv.writer(fSota, newline='')
 
-        for row in reader:
-            writer.writerow(['V2',self.callsign,row[12],row[0],row[1],\
-                row[3],row[11],row[2],row[13]])
+        with open(self.sotaNameEnt.get(), 'w', newline='') as fSota:
+            writer = csv.writer(fSota)
+            for row in reader:
+                writer.writerow(['V2',self.callsign,row[12],row[0],row[1],\
+                    row[3],row[11],row[2],row[13]])
 
-        fSota.close()
+        #fSota.close()
 
     def exportWwff(self):
         #Open the adif file
@@ -361,6 +370,7 @@ class Window(Frame):
         self.fAdif.write("<mode:"+str(len(row[11]))+">"+row[11])
         self.fAdif.write("<rst_sent:"+str(len(row[4]))+">"+row[4])
         self.fAdif.write("<rst_rcvd:"+str(len(row[5]))+">"+row[5])
+        self.fAdif.write("<name:"+str(len(row[6]))+">"+row[6])
         self.fAdif.write("<state:"+str(len(row[8]))+">"+row[8])
         self.fAdif.write("<qth:"+str(len(row[7]))+">"+row[7])
         self.fAdif.write("<tx_pwr:"+str(len(row[10]))+">"+row[10])
@@ -733,7 +743,7 @@ class Window(Frame):
 
 root=Tk()
 app=Window(root)
-version = "0.40"
+version = "0.41"
 root.wm_title("AA6XA Logger, v"+version)
 root.geometry("750x300")
 root.mainloop()
