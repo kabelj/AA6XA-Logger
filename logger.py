@@ -639,6 +639,23 @@ class Window(Frame):
         #Set the text in the gui
         self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
+        #clear fields
+        self.dateEnt.delete(0,'end')
+        self.timeEnt.delete(0,'end')
+        self.callEnt.delete(0,'end')
+        self.freqEnt.delete(0,'end')
+        self.rstSentEnt.delete(0,'end')
+        self.rstRxEnt.delete(0,'end')
+        self.nameEnt.delete(0,'end')
+        self.qthEnt.delete(0,'end')
+        self.stateEnt.delete(0,'end')
+        self.gridEnt.delete(0,'end')
+        self.pwrEnt.delete(0,'end')
+        self.sotaEnt.delete(0,'end')
+        self.s2sEnt.delete(0,'end')
+        self.wwffEnt.delete(0,'end')
+        self.qsoListTxt.configure(text='No QSOs yet')
+        self.timeEnt.focus_set()
 
     def checkTime(self):
         if not self.timeEnt.get():
