@@ -506,8 +506,10 @@ class Window(Frame):
             mode=='-1'
         #date
         try:
-            dateObj = parser.parse(row[0])
-            date = dateObj.strftime("%Y-%m-%d")
+            dateParts = row[0].split('/')
+            date = dateParts[2]+'-'+dateParts[1]+'-'+dateParts[0]
+            #dateObj = parser.parse(row[0])
+            #date = dateObj.strftime("%Y-%m-%d")
         except ValueError:
             print("Invalid date!")
 
