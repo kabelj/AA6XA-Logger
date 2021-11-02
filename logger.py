@@ -38,7 +38,7 @@ class Window(Frame):
 
         exportMenu = Menu(menu)
         exportMenu.add_command(label="SOTA CSV",command=self.exportSota)
-        exportMenu.add_command(label="WWFF ADIF",command=self.exportWwff)
+        exportMenu.add_command(label="ADIF",command=self.exportWwff)
         exportMenu.add_command(label="VHF Contest",command=self.vhfTest)
         exportMenu.add_command(label="NAQP Contest",command=self.naqp)
         menu.add_cascade(label="Export", menu=exportMenu)
