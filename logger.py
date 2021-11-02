@@ -254,7 +254,6 @@ class Window(Frame):
 
         #Validate stuff
         try:
-            print(date)
             parser.parse(date,dayfirst=True)
         except ValueError:
             md.showerror("Date Error","Invalid Date!")
