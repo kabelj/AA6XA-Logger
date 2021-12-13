@@ -526,7 +526,7 @@ class Window(Frame):
             self.cabNameEnt.insert(0,fname)
             self.fCab = open(fname,'w')
         else:
-            self.fCab = open(self.adifNameEnt.get(),'w')
+            self.fCab = open(self.cabNameEnt.get(),'w')
 
         #Write Cabrillo Header
         self.writeCabrilloHeader(self.config['NAQPCABRILLO']['contest'],\
