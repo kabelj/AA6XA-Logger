@@ -4,7 +4,7 @@ name = Jeff
 grid = CM97
 
 [LOGGER]
-defaultpath = '../logger/'
+defaultpath = './myLogs/'
 modes = {'CW','SSB','FM','DIGI'}
 
 [CABRILLO]

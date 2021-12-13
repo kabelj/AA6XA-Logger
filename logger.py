@@ -8,6 +8,9 @@ from dateutil import parser
 import re
 import glob
 
+import adifTools
+
+
 class Window(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
@@ -35,7 +38,7 @@ class Window(Frame):
 
         exportMenu = Menu(menu)
         exportMenu.add_command(label="SOTA CSV",command=self.exportSota)
-        exportMenu.add_command(label="WWFF ADIF",command=self.exportWwff)
+        exportMenu.add_command(label="ADIF",command=self.exportWwff)
         exportMenu.add_command(label="VHF Contest",command=self.vhfTest)
         exportMenu.add_command(label="NAQP Contest",command=self.naqp)
         menu.add_cascade(label="Export", menu=exportMenu)
@@ -256,6 +259,7 @@ class Window(Frame):
             md.showerror("Date Error","Invalid Date!")
             self.dateEnt.focus_set()
             return
+
         #band=self.freqToBand(freq,False)
         try:
             if self.freqToBand(freq,False)==-1:
@@ -344,49 +348,18 @@ class Window(Frame):
             self.fAdif = open(self.adifNameEnt.get(),'w')
 
         #Write ADIF Header
-        self.writeAdifHeader()
+        adifTools.writeAdifHeader(self.fAdif,version, self.callsign)
+        #self.writeAdifHeader()
 
         #Read each line, convert to adif form
         reader = csv.reader(self.logFile)
-        #rownum = 0
         #adifData = []
         for row in reader:
-            self.writeAdif(row)
+            adifTools.writeAdifRow(self.fAdif, row, self.callsign)
+            #self.writeAdif(row)
 
         self.fAdif.close()
         self.logFile.close()
-
-    def writeAdif(self, row):
-        band = self.freqToBand(row[3],False)
-        self.fAdif.write("<operator:"+str(len(self.callsign))+\
-            ">"+self.callsign)
-        self.fAdif.write("<call:"+str(len(row[2]))+">"+row[2])
-        self.fAdif.write("<qso_date:"+str(len(row[0]))+">"+row[0])
-        self.fAdif.write("<qso_date_off:>"+str(len(row[0]))+">"+row[0])
-        self.fAdif.write("<time_on:"+str(len(row[1]))+">"+row[1])
-        self.fAdif.write("<time_off:"+str(len(row[1]))+">"+row[1])
-        self.fAdif.write("<freq:"+str(len(row[3]))+">"+row[3])
-        self.fAdif.write("<band:"+str(len(band))+">"+band)
-        self.fAdif.write("<mode:"+str(len(row[11]))+">"+row[11])
-        self.fAdif.write("<rst_sent:"+str(len(row[4]))+">"+row[4])
-        self.fAdif.write("<rst_rcvd:"+str(len(row[5]))+">"+row[5])
-        self.fAdif.write("<name:"+str(len(row[6]))+">"+row[6])
-        self.fAdif.write("<state:"+str(len(row[8]))+">"+row[8])
-        self.fAdif.write("<qth:"+str(len(row[7]))+">"+row[7])
-        self.fAdif.write("<tx_pwr:"+str(len(row[10]))+">"+row[10])
-        self.fAdif.write("<my_sota_ref:"+str(len(row[12]))+">"+row[12])
-        self.fAdif.write("<sota_ref:"+str(len(row[13]))+">"+row[13])
-        self.fAdif.write("<my_sig_info:"+str(len(row[14]))+">"+row[14])
-        self.fAdif.write("<gridsquare:"+str(len(row[9]))+">"+row[9])
-        self.fAdif.write("<eor>\n")
-
-    def writeAdifHeader(self):
-        now = datetime.now().strftime('%d/%m/%Y %H:%M')
-        self.fAdif.write("Exported on "+now+' for '+self.callsign+' \n')
-        self.fAdif.write("\n<ADIF_VER:5>3.1.0 \n")
-        self.fAdif.write("<PROGRAMID:12>AA6XA logger \n")
-        self.fAdif.write("<PROGRAMVERSION:"+str(len(version))+">"\
-            +version+" \n<EOH>\n\n")
 
     def freqToBand(self, freq, cabrillo):
         #Note: freq is assumed to be a string.
@@ -506,8 +479,10 @@ class Window(Frame):
             mode=='-1'
         #date
         try:
-            dateObj = parser.parse(row[0])
-            date = dateObj.strftime("%Y-%m-%d")
+            dateParts = row[0].split('/')
+            date = dateParts[2]+'-'+dateParts[1]+'-'+dateParts[0]
+            #dateObj = parser.parse(row[0])
+            #date = dateObj.strftime("%Y-%m-%d")
         except ValueError:
             print("Invalid date!")
 
@@ -551,7 +526,7 @@ class Window(Frame):
             self.cabNameEnt.insert(0,fname)
             self.fCab = open(fname,'w')
         else:
-            self.fCab = open(self.adifNameEnt.get(),'w')
+            self.fCab = open(self.cabNameEnt.get(),'w')
 
         #Write Cabrillo Header
         self.writeCabrilloHeader(self.config['NAQPCABRILLO']['contest'],\
@@ -639,6 +614,23 @@ class Window(Frame):
         #Set the text in the gui
         self.logNameEnt.delete(0,'end')
         self.logNameEnt.insert(0,self.logFile)
+        #clear fields
+        self.dateEnt.delete(0,'end')
+        self.timeEnt.delete(0,'end')
+        self.callEnt.delete(0,'end')
+        self.freqEnt.delete(0,'end')
+        self.rstSentEnt.delete(0,'end')
+        self.rstRxEnt.delete(0,'end')
+        self.nameEnt.delete(0,'end')
+        self.qthEnt.delete(0,'end')
+        self.stateEnt.delete(0,'end')
+        self.gridEnt.delete(0,'end')
+        self.pwrEnt.delete(0,'end')
+        self.sotaEnt.delete(0,'end')
+        self.s2sEnt.delete(0,'end')
+        self.wwffEnt.delete(0,'end')
+        self.qsoListTxt.configure(text='No QSOs yet')
+        self.timeEnt.focus_set()
 
     def checkTime(self):
         if not self.timeEnt.get():
@@ -743,7 +735,7 @@ class Window(Frame):
 
 root=Tk()
 app=Window(root)
-version = "0.41"
+version = "0.42"
 root.wm_title("AA6XA Logger, v"+version)
 root.geometry("750x300")
 root.mainloop()

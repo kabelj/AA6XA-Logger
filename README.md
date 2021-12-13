@@ -13,8 +13,7 @@ looking for a full featured logger that will keep track of your DX and
 control your transceiver, look elsewhere; this is a simple one.
 
 ## Download and Installation
-You will need Python 3 installed.
-You also need some Python packages:
+You will need Python 3 installed, and some Python packages:
 - Tk
 - dateutil
 - datetime
@@ -32,19 +31,15 @@ cd to the directory you want to put the program in, then type
 `git clone https://github.com/kabelj/AA6XA-Logger.git`
 This will download all the necessary files to the directory. It can then be 
 run with the command `python3 logger.py`. If you have set the `python` 
-command to use Python 3, then just use that instead.
+command to use Python 3, then just use that instead. The change the 
+loggersettings file before you start.
 
-Mac:
+Mac/Windows:
 If you have git installed, you can follow the instructions above. If not, 
 click the green "download code" button and download the Zip file. Unzip this 
 in the location you want to save it. Open a terminal window, cd to that 
-directory, and run the command `python3 logger.py`
-
-Windows:
-Follow the Linux instructions if you have Git installed. Otherwise follow 
-the Mac instructions. I don't have a Windows computer, so I can't test that 
-everything works there, or even if these steps are accurate. Your system may
-have a different method of calling python.
+directory, and run the command `python3 logger.py`. I don't have a computer 
+with either OS, so I can't test the logger.
 
 
 
@@ -121,6 +116,8 @@ how to do databases.
 - Export only certain QSOs for a given export
 - Other fields people may want
 - Support for other On The Air activities
+- Simpler GUI for typing in contest QSOs, with only the needed fields
+
 
 ### Bugs
 If you use this and find a bug, let me know, and I'll add it to the list. I 
@@ -132,9 +129,10 @@ database expects them to be in chronological order. If they're not, you'll
 need to manually cut/paste lines in a text editor to fix this.
 - Only bands that I use (or will soon!) are currently supported. This shouldn't 
 matter unless you're really into microwaves. (All HF/VHF/UHF are supported)
-- I haven't looked to closely at how Python's datetime works, so be careful 
+- Python's datetime is still a mystery to me, so be careful 
 with dates where the month and day can be interchanged, e.g. 3/4/2021. I 
-added a note to the GUI to remind you the best format.
+added a note to the GUI to remind you the format that is expected by the 
+logger, Day/Month/Year. Only that format!
 - I'm pretty sure I did all the input validation regex's right, so please 
 let me know if you find a bug in one!
 - I've had reports that on Windows the file extensions are not added. It 
@@ -146,7 +144,7 @@ I'm having trouble reproducing this, since I don't own a Windows computer.
 
 ## History
 When my Macbook, the main computer in my shack, started to die, I replaced it 
-with a Raspberry pi. This meant switching to Linux. Overall this was a good 
+with a Raspberry Pi. This meant switching to Linux. Overall this was a good 
 experience; however I was not able to find a general purpose logger that I 
 liked. Luckily, there is no law against making my own. In fact, I'd argue it's 
 in the spirit of ham radio to make your own. I wanted a logger that 
